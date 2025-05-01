@@ -1,4 +1,37 @@
 package com.example.medical_schedule_app.di
 
-class AppModule {
+import android.content.Context
+import com.example.medical_schedule_app.data.api.ApiService
+import com.example.medical_schedule_app.data.api.DoctorApiService
+import com.example.medical_schedule_app.data.repositories.DoctorRepository
+import com.example.medical_schedule_app.data.repositories.UserRepository
+import com.example.medical_schedule_app.utils.SessionManager
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object AppModule {
+
+    @Provides
+    @Singleton
+    fun provideSessionManager(@ApplicationContext context: Context): SessionManager {
+        return SessionManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserRepository(apiService: ApiService): UserRepository {
+        return UserRepository(apiService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDoctorRepository(doctorApiService: DoctorApiService): DoctorRepository {
+        return DoctorRepository(doctorApiService)
+    }
 }
