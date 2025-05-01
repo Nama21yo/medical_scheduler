@@ -1,5 +1,4 @@
-package com.example.medical_schedule_app.ui.doctor
-
+package com.example.medical_schedule_app.ui.diagnosis
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,7 +8,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,16 +20,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.medical_schedule_app.ui.theme.Medical_schedule_appTheme
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DiagnosisDetailsScreen(
+fun DiagnosisSummaryScreen(
     diagnosisId: String,
     navController: NavController
 ) {
-    // In a real app, this would fetch the diagnosis details based on the ID
+
+//    To be Implemented
     val diagnosis = remember {
         DiagnosisDetails(
             id = diagnosisId,
@@ -48,7 +47,7 @@ fun DiagnosisDetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Diagnosis Details") },
+                title = { Text("Diagnosis Summary") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -79,7 +78,6 @@ fun DiagnosisDetailsScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Patient and date information
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
@@ -123,37 +121,18 @@ fun DiagnosisDetailsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Diagnosis details sections
-            DiagnosisSection(
-                title = "Symptoms",
-                content = diagnosis.symptoms
-            )
-
-            DiagnosisSection(
-                title = "Diagnosis",
-                content = diagnosis.diagnosis
-            )
-
-            DiagnosisSection(
-                title = "Prescribed Medication",
-                content = diagnosis.medication
-            )
-
-            DiagnosisSection(
-                title = "Additional Notes",
-                content = diagnosis.notes
-            )
-
-            DiagnosisSection(
-                title = "Follow Up",
-                content = diagnosis.followUp
-            )
+            DiagnosisSection("Symptoms", diagnosis.symptoms)
+            DiagnosisSection("Diagnosis", diagnosis.diagnosis)
+            DiagnosisSection("Prescribed Medication", diagnosis.medication)
+            DiagnosisSection("Additional Notes", diagnosis.notes)
+            DiagnosisSection("Follow Up", diagnosis.followUp)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // PDF and share buttons
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 OutlinedButton(
@@ -193,8 +172,6 @@ fun DiagnosisDetailsScreen(
                     Text("Share")
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -246,9 +223,9 @@ fun DiagnosisSection(
 
 @Preview(showBackground = true)
 @Composable
-fun DiagnosisDetailsScreenPreview() {
+fun DiagnosisSummaryScreenPreview() {
     Medical_schedule_appTheme {
-        DiagnosisDetailsScreen(
+        DiagnosisSummaryScreen(
             diagnosisId = "123",
             navController = rememberNavController()
         )
