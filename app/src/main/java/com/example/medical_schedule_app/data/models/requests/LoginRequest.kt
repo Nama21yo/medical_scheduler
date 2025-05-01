@@ -1,4 +1,6 @@
 package com.example.medical_schedule_app.data.models.requests
 
-class LoginRequest {
-}
+data class LoginRequest(
+    val email: String,
+    val password: String
+)
