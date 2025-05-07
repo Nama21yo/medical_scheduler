@@ -3,6 +3,7 @@ package com.example.medical_schedule_app.ui.receptionist
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items // Import items function
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -11,6 +12,8 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,8 +23,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel // Import Hilt ViewModel
+import com.example.medical_schedule_app.data.models.responses.DoctorResponse
+import com.example.medical_schedule_app.data.models.responses.PatientResponse
+import kotlin.String
 
-// Define QueueEntry data class
+// Define QueueEntry data class (keep this in UI for display model)
 data class QueueEntry(
     val id: Int,
     val patientName: String,
@@ -29,7 +36,7 @@ data class QueueEntry(
     val isActionable: Boolean = true
 )
 
-// Define colors
+// Define colors (keep this in UI for styling)
 val DarkBlue = Color(0xFF0D253F)
 val MediumBlue = Color(0xFF3D6FB4)
 val LightBackgroundBlue = Color(0xFFF0F7FC)
@@ -40,36 +47,17 @@ val BorderColor = Color(0xFFD1D5DB)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReceptionistQueueScreenPhone(
+    state: ReceptionistQueueState, // Receive state from ViewModel
+    onEvent: (ReceptionistQueueEvent) -> Unit, // Receive event handler
     onNavigateToAddPatient: () -> Unit,
     onLogout: () -> Unit,
-    onUserProfileClick: () -> Unit
+    onUserProfileClick: () -> Unit,
+    modifier: Modifier = Modifier // Add modifier parameter
 ) {
-    val activeEntriesCount by remember { mutableStateOf(0) }
-    val pendingEntriesCount by remember { mutableStateOf(0) }
-    var queueSearchQuery by remember { mutableStateOf("") }
-    var dbSearchQuery by remember { mutableStateOf("") }
     var showMenu by remember { mutableStateOf(false) }
 
-    val queueItems = remember {
-        listOf(
-            QueueEntry(1, "Abebe T.", "Not Pending", isActionable = true),
-            QueueEntry(2, "Bekele C.", "Pending", isActionable = true),
-            QueueEntry(3, "Chaltu M.", "Active", isActionable = true)
-        )
-    }
-
-    val filteredQueueItems = remember(queueItems, queueSearchQuery) {
-        if (queueSearchQuery.isBlank()) {
-            queueItems
-        } else {
-            queueItems.filter {
-                it.patientName.contains(queueSearchQuery, ignoreCase = true) ||
-                        it.status.contains(queueSearchQuery, ignoreCase = true)
-            }
-        }
-    }
-
     Scaffold(
+        modifier = modifier.fillMaxSize(), // Apply modifier
         topBar = {
             TopAppBar(
                 title = { Text("Receptionist Queue", color = TextColorLight) },
@@ -115,16 +103,16 @@ fun ReceptionistQueueScreenPhone(
                 .padding(horizontal = 16.dp, vertical = 12.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Stats Cards
+            // Stats Cards - Use counts from the ViewModel state
             StatsCard(
                 title = "Active Entries",
-                count = activeEntriesCount,
+                count = state.activeEntries,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(12.dp))
             StatsCard(
                 title = "Pending Entries",
-                count = pendingEntriesCount,
+                count = state.pendingEntries,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -137,9 +125,9 @@ fun ReceptionistQueueScreenPhone(
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(40.dp) // Reduced button height
+                    .height(40.dp)
             ) {
-                Text("Add patient", color = TextColorLight, fontSize = 14.sp) // Adjusted font size
+                Text("Add patient", color = TextColorLight, fontSize = 14.sp)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -153,8 +141,8 @@ fun ReceptionistQueueScreenPhone(
                     Text("Search in Current Queue", style = MaterialTheme.typography.titleSmall, color = TextColorDark)
                     Spacer(modifier = Modifier.height(4.dp))
                     SearchInputField(
-                        value = queueSearchQuery,
-                        onValueChange = { queueSearchQuery = it },
+                        value = state.searchQueue, // Use state from ViewModel
+                        onValueChange = { onEvent(ReceptionistQueueEvent.OnSearchQueueChange(it)) }, // Trigger event
                         placeholder = "Enter name or status...",
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -163,8 +151,8 @@ fun ReceptionistQueueScreenPhone(
                     Text("Search in Database", style = MaterialTheme.typography.titleSmall, color = TextColorDark)
                     Spacer(modifier = Modifier.height(4.dp))
                     SearchInputField(
-                        value = dbSearchQuery,
-                        onValueChange = { dbSearchQuery = it },
+                        value = state.searchDataBaseSearch, // Use state from ViewModel
+                        onValueChange = { onEvent(ReceptionistQueueEvent.OnSearchDataBaseSearchChange(it)) }, // Trigger event
                         placeholder = "Search all patients...",
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -176,19 +164,103 @@ fun ReceptionistQueueScreenPhone(
             // Queue Table
             Text("Current Queue", style = MaterialTheme.typography.titleMedium, color = TextColorDark, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
+
+            // Map QueueResponse to QueueEntry for UI display
+            val displayedQueueEntries = state.displayedQueues.map { queueResponse ->
+                QueueEntry(
+                    id = queueResponse.queue_id,
+                    patientName = (queueResponse.patient.first_name + " " + queueResponse.patient.last_name),
+                    status = when (queueResponse.status) {
+                        1 -> "Active"
+                        2 -> "Pending"
+                        3 -> "Resolved"
+                        else -> "Unknown"
+                    },
+                    isActionable = queueResponse.status != 3 // Assuming you only want to action on non-resolved
+                )
+            }
+
             QueueTable(
-                queueItems = filteredQueueItems,
+                queueItems = displayedQueueEntries, // Use the displayed/filtered list from state
                 onResolveClick = { entryId ->
-                    println("Resolve clicked for ID: $entryId")
+                    // Find the corresponding QueueResponse and trigger update status event
+                    val queueToUpdate = state.displayedQueues.find { it.queue_id == entryId }
+                    queueToUpdate?.let {
+                        onEvent(ReceptionistQueueEvent.UpdateQueueStatus(it.queue_id, 3))
+                    }
                 },
                 modifier = Modifier.fillMaxWidth()
             )
+
+            // Display Database Search Results
+            if (state.searchDataBaseSearch.isNotBlank()) {
+                Spacer(modifier = Modifier.height(20.dp))
+                Text("Database Search Results", style = MaterialTheme.typography.titleMedium, color = TextColorDark, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                if (state.isDatabaseSearchLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                } else if (state.databaseSearchError != null) {
+                    Text(
+                        text = "Error: ${state.databaseSearchError}",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                } else if (state.patients.isEmpty()) {
+                    Text(
+                        text = "No patients found in database.",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .background(Color.White),
+                        textAlign = TextAlign.Center,
+                        color = TextColorDark
+                    )
+                } else {
+                    // Display database search results (e.g., in a LazyColumn)
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 200.dp) // Limit height for scrolling
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color.White)
+                    ) {
+                        items(state.patients, key = { patient -> patient.patient_id }) { patient ->
+                            DatabasePatientResultItem(patient = patient)
+                            Divider(color = BorderColor, thickness = 1.dp)
+                        }
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
+@Composable
+fun DatabasePatientResultItem(patient: PatientResponse) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column {
+            Text(text = (patient.first_name + " " + patient.last_name), fontSize = 18.sp, color = TextColorDark, fontWeight = FontWeight.Bold)
+            Text(text = "ID: ${patient.patient_id}")
+            // CORRECTED: Assuming the phone number property is named 'phone'
+            Text(text = "Phone: ${patient.phone_number}")
+            Text(text = "Email: ${patient.email}")
+        }
+        // Add an action button if needed, e.g., "Add to Queue"
+        // Button(onClick = { /* Add to queue logic */ }) { Text("Add to Queue") }
+    }
+}
+
+// Keep helper composables as they are pure UI elements
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchInputField(
@@ -292,14 +364,18 @@ fun QueueTableRow(item: QueueEntry, onResolveClick: (Int) -> Unit) {
             modifier = Modifier.weight(0.3f),
             contentAlignment = Alignment.Center
         ) {
-            Button(
-                onClick = { onResolveClick(item.id) },
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MediumBlue),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                modifier = Modifier.height(36.dp)
-            ) {
-                Text("Resolve", color = TextColorLight, fontSize = 13.sp)
+            if (item.isActionable) { // Only show button if actionable
+                Button(
+                    onClick = { onResolveClick(item.id) },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MediumBlue),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                    modifier = Modifier.height(36.dp)
+                ) {
+                    Text("Resolve", color = TextColorLight, fontSize = 13.sp)
+                }
+            } else {
+                Spacer(modifier = Modifier.height(36.dp)) // Maintain spacing
             }
         }
     }
@@ -323,16 +399,4 @@ fun RowScope.TableCell(
         textAlign = alignment,
         fontSize = if (isHeader) 15.sp else 14.sp
     )
-}
-
-@Preview(showBackground = true, device = "spec:shape=Normal,width=360,height=640,unit=dp,dpi=480")
-@Composable
-fun ReceptionistQueueScreenPhonePreview() {
-    MaterialTheme {
-        ReceptionistQueueScreenPhone(
-            onNavigateToAddPatient = {},
-            onLogout = {},
-            onUserProfileClick = {}
-        )
-    }
 }

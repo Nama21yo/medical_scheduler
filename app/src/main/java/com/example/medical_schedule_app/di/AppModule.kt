@@ -3,7 +3,9 @@ package com.example.medical_schedule_app.di
 import android.content.Context
 import com.example.medical_schedule_app.data.api.ApiService
 import com.example.medical_schedule_app.data.api.DoctorApiService
+import com.example.medical_schedule_app.data.api.ReceptionistApiService
 import com.example.medical_schedule_app.data.repositories.DoctorRepository
+import com.example.medical_schedule_app.data.repositories.ReceptionistRepository
 import com.example.medical_schedule_app.data.repositories.UserRepository
 import com.example.medical_schedule_app.utils.SessionManager
 import dagger.Module
@@ -33,5 +35,11 @@ object AppModule {
     @Singleton
     fun provideDoctorRepository(doctorApiService: DoctorApiService): DoctorRepository {
         return DoctorRepository(doctorApiService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideReceptionistRepository(receptionistApiService: ReceptionistApiService): ReceptionistRepository {
+        return ReceptionistRepository(receptionistApiService)
     }
 }
