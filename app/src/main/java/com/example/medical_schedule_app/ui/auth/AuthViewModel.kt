@@ -1,12 +1,13 @@
 package com.example.medical_schedule_app.ui.auth
 
+import android.util.Log // For logging
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medical_schedule_app.data.models.Role
 import com.example.medical_schedule_app.data.repositories.UserRepository
-import com.example.medical_schedule_app.utils.SessionManager
+import com.example.medical_schedule_app.utils.ActualSessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -14,22 +15,29 @@ import javax.inject.Inject
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val sessionManager: SessionManager
+    val sessionManager: ActualSessionManager // Make public or provide getter for token check
 ) : ViewModel() {
 
     private val _roles = MutableLiveData<List<Role>>()
     val roles: LiveData<List<Role>> = _roles
 
-    private val _loginResult = MutableLiveData<Result<String>>()
-    val loginResult: LiveData<Result<String>> = _loginResult
+    // Use a single event channel or StateFlow for navigation events if possible,
+    // but for now, we'll reset these LiveData.
+    private val _loginResult = MutableLiveData<Result<String>?>() // Nullable to indicate "no event"
+    val loginResult: LiveData<Result<String>?> = _loginResult
 
-    private val _signupResult = MutableLiveData<Result<String>>()
-    val signupResult: LiveData<Result<String>> = _signupResult
+    private val _signupResult = MutableLiveData<Result<String>?>() // Nullable
+    val signupResult: LiveData<Result<String>?> = _signupResult
 
-    private val _selectedRole = MutableLiveData<Role>()
-    val selectedRole: LiveData<Role> = _selectedRole
+    private val _selectedRole = MutableLiveData<Role?>() // Nullable, reset on logout
+    val selectedRole: LiveData<Role?> = _selectedRole
+
+    // Expose a simple way to check if logged in, if LoginSignupScreen doesn't directly use sessionManager
+    val isLoggedIn: Boolean
+        get() = sessionManager.fetchAuthToken() != null
 
     init {
+        Log.d("AuthViewModel", "INIT: Token: ${sessionManager.fetchAuthToken()}")
         loadRoles()
     }
 
@@ -39,7 +47,8 @@ class AuthViewModel @Inject constructor(
                 val rolesList = userRepository.getRoles()
                 _roles.value = rolesList
             } catch (e: Exception) {
-                // Handle error
+                Log.e("AuthViewModel", "Error loading roles", e)
+                // Handle error, maybe post to an error LiveData
             }
         }
     }
@@ -49,12 +58,17 @@ class AuthViewModel @Inject constructor(
             val result = userRepository.login(email, password)
             result.onSuccess { token ->
                 sessionManager.saveAuthToken(token)
-                // Save role if selected
-                _selectedRole.value?.let { role ->
-                    sessionManager.saveUserRole(role)
+                // selectedRole should already be set by the UI before calling login
+                _selectedRole.value?.role_id?.let { roleId ->
+                    sessionManager.saveUserId(roleId) // Save role_id as user_id
+                    Log.d("AuthViewModel", "Login success, token and userId saved.")
+                } ?: run {
+                    Log.e("AuthViewModel", "Login success, but selectedRole or role_id is null.")
+                    // This is an issue, role should be selected before login attempt.
+                    // Potentially clear token and post failure to _loginResult if role is mandatory.
                 }
             }
-            _loginResult.value = result
+            _loginResult.postValue(result) // Post the result to trigger UI update/navigation
         }
     }
 
@@ -63,16 +77,31 @@ class AuthViewModel @Inject constructor(
             val result = userRepository.signup(email, roleId)
             result.onSuccess { token ->
                 sessionManager.saveAuthToken(token)
-                // Save role if selected
-                _selectedRole.value?.let { role ->
-                    sessionManager.saveUserRole(role)
-                }
+                sessionManager.saveUserId(roleId) // Save role_id as user_id
+                Log.d("AuthViewModel", "Signup success, token and userId saved.")
             }
-            _signupResult.value = result
+            _signupResult.postValue(result) // Post the result
         }
     }
 
     fun setSelectedRole(role: Role) {
         _selectedRole.value = role
+    }
+
+    fun logout() {
+        Log.d("AuthViewModel", "Logout called. Clearing session and resetting states.")
+        viewModelScope.launch {
+            sessionManager.clearSession()
+            _selectedRole.postValue(null)
+            _loginResult.postValue(null) // Reset to null to prevent re-triggering
+            _signupResult.postValue(null) // Reset to null
+            Log.d("AuthViewModel", "Session cleared. Token after clear: ${sessionManager.fetchAuthToken()}")
+        }
+    }
+
+    // Call this from LoginSignupScreen after processing a result to prevent re-navigation on config change
+    fun clearAuthResults() {
+        _loginResult.postValue(null)
+        _signupResult.postValue(null)
     }
 }
