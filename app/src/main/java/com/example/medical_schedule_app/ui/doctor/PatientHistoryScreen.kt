@@ -1,4 +1,3 @@
-
 package com.example.medical_schedule_app.ui.doctor
 
 import androidx.compose.foundation.background
@@ -15,12 +14,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.medical_schedule_app.navigation.NavigationRoutes
 import com.example.medical_schedule_app.ui.components.MedicalAppBar
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -32,6 +36,7 @@ fun DiagnosisDetailsScreen(
 ) {
     val patientId = diagnosisId.toIntOrNull() ?: 0
     val state by viewModel.state.collectAsState()
+    val blueColor = Color(0xFF3D6FB4)
 
     LaunchedEffect(patientId) {
         if (patientId > 0) {
@@ -39,248 +44,272 @@ fun DiagnosisDetailsScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF0F8FF))
-    ) {
-        MedicalAppBar(
-            title = "Patient History",
-            navController = navController,
-            showBackButton = true
-        )
-
-        if (state.isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else if (state.error != null) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Error: ${state.error}",
-                    color = Color.Red
-                )
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                // Patient Info Card
-                state.patient?.let { patient ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF2962FF))
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "Name: ${patient.first_name} ${patient.last_name}",
-                                fontSize = 18.sp,
-                                color = Color.White,
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                text = "Age: ${calculateAge(patient.date_of_birth)}",
-                                fontSize = 16.sp,
-                                color = Color.White,
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                text = "ID: ${patient.patient_id}",
-                                fontSize = 16.sp,
-                                color = Color.White,
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                text = "Location: ${patient.address}",
-                                fontSize = 16.sp,
-                                color = Color.White,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-
-                    // Total Diagnosis Card
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF2962FF))
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "Total Diagnosis",
-                                fontSize = 18.sp,
-                                color = Color.White
-                            )
-                            Text(
-                                text = state.diagnoses.size.toString(),
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
-                    }
-
-                    // Add Diagnosis Button
-                    Button(
-                        onClick = {
-                            navController.navigate(NavigationRoutes.DIAGNOSIS_FORM + "?patientId=${patient.patient_id}")
-                        },
-                        modifier = Modifier
-                            .padding(bottom = 16.dp)
-                            .align(Alignment.Start),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D47A1))
-                    ) {
-                        Text("Add Diagnosis")
-                    }
-
-                    // Search Field (Non-functional in this implementation)
-                    OutlinedTextField(
-                        value = "",
-                        onValueChange = { },
-                        placeholder = { Text("Search for Diagnosis...") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF2962FF),
-                            unfocusedBorderColor = Color(0xFF2962FF)
-                        )
+    MedicalAppBar(
+        navController = navController,
+        screenTitle = "Patient History"
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF0F8FF))
+                .padding(paddingValues)
+        ) {
+            if (state.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else if (state.error != null) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Error: ${state.error}",
+                        color = Color.Red
                     )
-
-                    // Diagnoses Table
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        // Table Header
-                        Row(
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    // Patient Info Card
+                    state.patient?.let { patient ->
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Color(0xFF2962FF))
-                                .padding(8.dp)
+                                .padding(bottom = 12.dp),
+                            colors = CardDefaults.cardColors(containerColor = blueColor),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
-                            Text(
-                                text = "Diagnosis",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text(
-                                text = "Date",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text(
-                                text = "Actions",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-
-                        // Table Content
-                        if (state.diagnoses.isEmpty()) {
-                            Box(
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(100.dp),
-                                contentAlignment = Alignment.Center
+                                    .padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = "No diagnoses available",
-                                    color = Color.Gray
+                                    text = "Name: ${patient.first_name} ${patient.last_name}",
+                                    fontSize = 20.sp,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = "Age: ${calculateAge(patient.date_of_birth)}",
+                                    fontSize = 18.sp,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = "ID: ${patient.patient_id}",
+                                    fontSize = 18.sp,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = "Location: ${patient.address}",
+                                    fontSize = 18.sp,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center
                                 )
                             }
-                        } else {
-                            LazyColumn(
-                                modifier = Modifier.height(300.dp)
+                        }
+
+                        // Total Diagnosis Card
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp),
+                            colors = CardDefaults.cardColors(containerColor = blueColor),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                items(state.diagnoses) { diagnosis ->
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = diagnosis.diagnosis_name,
-                                            fontSize = 16.sp,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                        Text(
-                                            text = formatDate(diagnosis.created_at),
-                                            fontSize = 16.sp,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                        Button(
-                                            onClick = {
-                                                // Navigate to view diagnosis details
-                                                navController.navigate("diagnosis_summary/${diagnosisId}")
-                                            },
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = Color(0xFF2962FF)
-                                            ),
+                                Text(
+                                    text = "Total Diagnosis",
+                                    fontSize = 20.sp,
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = state.diagnoses.size.toString(),
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+                        }
+
+                        // Add Diagnosis Button
+                        Button(
+                            onClick = {
+                                navController.navigate(NavigationRoutes.DIAGNOSIS_FORM + "?patientId=${patient.patient_id}")
+                            },
+                            modifier = Modifier
+                                .padding(bottom = 12.dp)
+                                .align(Alignment.Start)
+                                .height(40.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = blueColor),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                        ) {
+                            Text(
+                                text = "Add Diagnosis",
+                                fontSize = 14.sp
+                            )
+                        }
+
+                        // Search Field
+                        OutlinedTextField(
+                            value = "",
+                            onValueChange = { },
+                            placeholder = {
+                                Text(
+                                    text = "Search for Diagnosis...",
+                                    color = Color.Gray
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = blueColor,
+                                unfocusedBorderColor = blueColor,
+                                focusedPlaceholderColor = Color.Gray,
+                                unfocusedPlaceholderColor = Color.Gray
+                            )
+                        )
+
+                        // Diagnoses Table
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            // Table Header
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(blueColor)
+                                    .padding(8.dp)
+                            ) {
+                                Text(
+                                    text = "Diagnosis",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    text = "Date",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    text = "Actions",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+
+                            // Table Content
+                            if (state.diagnoses.isEmpty()) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(100.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "No diagnoses available",
+                                        color = Color.Gray
+                                    )
+                                }
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier.height(300.dp)
+                                ) {
+                                    items(state.diagnoses) { diagnosis ->
+                                        Row(
                                             modifier = Modifier
-                                                .weight(1f)
-                                                .height(36.dp)
+                                                .fillMaxWidth()
+                                                .padding(vertical = 12.dp),
+                                            verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Text(
-                                                text = "View Details",
-                                                fontSize = 12.sp
+                                                text = diagnosis.diagnosis_name,
+                                                fontSize = 16.sp,
+                                                textAlign = TextAlign.Center,
+                                                modifier = Modifier.weight(1f)
                                             )
+                                            Text(
+                                                text = formatDate(diagnosis.created_at),
+                                                fontSize = 16.sp,
+                                                textAlign = TextAlign.Center,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                            Button(
+                                                onClick = {
+                                                    navController.navigate("diagnosis_summary/${diagnosisId}")
+                                                },
+                                                colors = ButtonDefaults.buttonColors(
+                                                    containerColor = blueColor
+                                                ),
+                                                elevation = ButtonDefaults.buttonElevation(
+                                                    defaultElevation = 2.dp
+                                                ),
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .height(40.dp)
+                                            ) {
+                                                Text(
+                                                    text = "View Details",
+                                                    fontSize = 14.sp
+                                                )
+                                            }
                                         }
+                                        Divider(thickness = 0.5.dp, color = Color(0xFFD3D3D3))
                                     }
-                                    Divider()
                                 }
                             }
                         }
-                    }
 
-                    // Back Button
-                    Button(
-                        onClick = { navController.navigateUp() },
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(top = 16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D47A1))
-                    ) {
-                        Text("Back")
-                    }
-                } ?: run {
-                    // If patient is null
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Patient not found",
-                            color = Color.Red
-                        )
+                        // Back Button
+                        Button(
+                            onClick = { navController.navigateUp() },
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
+                                .padding(top = 12.dp)
+                                .height(40.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = blueColor),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                        ) {
+                            Text(
+                                text = "Back",
+                                fontSize = 14.sp
+                            )
+                        }
+                    } ?: run {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Patient not found",
+                                color = Color.Red
+                            )
+                        }
                     }
                 }
             }
@@ -321,3 +350,4 @@ private fun formatDate(dateString: String): String {
         dateString
     }
 }
+

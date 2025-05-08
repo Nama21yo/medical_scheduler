@@ -12,12 +12,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.medical_schedule_app.navigation.NavigationRoutes
 import com.example.medical_schedule_app.ui.components.MedicalAppBar
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
 
 @Composable
 fun DoctorQueueScreen(
@@ -25,30 +33,19 @@ fun DoctorQueueScreen(
     viewModel: DoctorQueueViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val blueColor = Color(0xFF3D6FB4)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF0F8FF))
-    ) {
-        MedicalAppBar(
-            title = "Doctor Queue",
-            navController = navController,
-            showBackButton = false
-        )
-
+    MedicalAppBar(
+        navController = navController,
+        screenTitle = "Doctor Queue"
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp)
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(Color(0xFFF0F7FC))
+                .padding(horizontal = 16.dp, vertical = 12.dp) // Adjusted for sidebar
         ) {
-            Text(
-                text = "Doctor Queue",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-
             // Stats Cards
             listOf(
                 "Total Completed" to state.totalCompleted,
@@ -58,8 +55,9 @@ fun DoctorQueueScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 6.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF2962FF))
+                        .padding(bottom = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = blueColor),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(
                         modifier = Modifier
@@ -86,34 +84,37 @@ fun DoctorQueueScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp)
+                    .padding(top = 16.dp)
             ) {
                 // Table Header
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF2962FF))
-                        .padding(6.dp)
+                        .background(blueColor)
+                        .padding(8.dp)
                 ) {
                     Text(
                         text = "Name",
-                        fontSize = 14.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
                         text = "Status",
-                        fontSize = 14.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
                         text = "Actions",
-                        fontSize = 14.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -141,18 +142,19 @@ fun DoctorQueueScreen(
                         )
                     }
                 } else {
-                    LazyColumn {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(state.queues) { queue ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
+                                    .padding(vertical = 12.dp),
                                 verticalAlignment = Alignment.Top
                             ) {
                                 // Name
                                 Text(
                                     text = "${queue.patient.first_name} ${queue.patient.last_name}",
-                                    fontSize = 13.sp,
+                                    fontSize = 14.sp,
+                                    textAlign = TextAlign.Center,
                                     modifier = Modifier.weight(1f)
                                 )
 
@@ -164,7 +166,8 @@ fun DoctorQueueScreen(
                                         3 -> "Resolved"
                                         else -> "Unknown"
                                     },
-                                    fontSize = 13.sp,
+                                    fontSize = 14.sp,
+                                    textAlign = TextAlign.Center,
                                     modifier = Modifier.weight(1f)
                                 )
 
@@ -172,8 +175,8 @@ fun DoctorQueueScreen(
                                 Column(
                                     modifier = Modifier
                                         .weight(1f)
-                                        .padding(horizontal = 4.dp),
-                                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                                        .padding(horizontal = 8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Button(
@@ -186,15 +189,18 @@ fun DoctorQueueScreen(
                                             )
                                         },
                                         colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(0xFF2962FF)
+                                            containerColor = blueColor
+                                        ),
+                                        elevation = ButtonDefaults.buttonElevation(
+                                            defaultElevation = 2.dp
                                         ),
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(32.dp)
+                                            .height(36.dp)
                                     ) {
                                         Text(
                                             text = if (queue.status != 2) "Pend" else "Unpend",
-                                            fontSize = 11.sp
+                                            fontSize = 12.sp
                                         )
                                     }
 
@@ -208,15 +214,18 @@ fun DoctorQueueScreen(
                                             )
                                         },
                                         colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(0xFF2962FF)
+                                            containerColor = blueColor
+                                        ),
+                                        elevation = ButtonDefaults.buttonElevation(
+                                            defaultElevation = 2.dp
                                         ),
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(32.dp)
+                                            .height(36.dp)
                                     ) {
                                         Text(
                                             text = "View History",
-                                            fontSize = 11.sp
+                                            fontSize = 12.sp
                                         )
                                     }
 
@@ -227,20 +236,23 @@ fun DoctorQueueScreen(
                                             )
                                         },
                                         colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(0xFF2962FF)
+                                            containerColor = blueColor
+                                        ),
+                                        elevation = ButtonDefaults.buttonElevation(
+                                            defaultElevation = 2.dp
                                         ),
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(32.dp)
+                                            .height(36.dp)
                                     ) {
                                         Text(
                                             text = "Complete",
-                                            fontSize = 11.sp
+                                            fontSize = 12.sp
                                         )
                                     }
                                 }
                             }
-                            Divider(thickness = 0.5.dp)
+                            Divider(thickness = 0.5.dp, color = Color(0xFFD3D3D3))
                         }
                     }
                 }
@@ -248,3 +260,5 @@ fun DoctorQueueScreen(
         }
     }
 }
+
+
