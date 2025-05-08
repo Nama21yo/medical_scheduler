@@ -27,7 +27,7 @@ interface ApiService {
     @GET("users/user")
     suspend fun getUserProfile(@Header("Authorization") token: String): User
 
-    @PUT("users/{userId}")
+    @PUT("users/update/{userId}")
     suspend fun updateUserProfile(
         @Header("Authorization") token: String,
         @Path("userId") userId: Int,

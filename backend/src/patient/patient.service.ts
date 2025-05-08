@@ -86,4 +86,14 @@ export class PatientService {
   async findAll(): Promise<Patient[]> {
     return this.patientRepository.find({ relations: ['registered_by'] });
   }
+
+  async deleteByEmail(email: string): Promise<void> {
+    const patient = await this.patientRepository.findOne({ where: { email } });
+
+    if (!patient) {
+      throw new NotFoundException('Patient not Found');
+    }
+
+    await this.patientRepository.remove(patient);
+  }
 }

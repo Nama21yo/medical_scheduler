@@ -83,4 +83,13 @@ export class DoctorService {
     // Save the updated doctor details
     return this.doctorRepository.save(doctor);
   }
+
+  async deleteByEmail(email: string): Promise<void> {
+    const doctor = await this.doctorRepository.findOne({ where: { email } });
+    if (!doctor) {
+      throw new NotFoundException('Doctor Not Found');
+    }
+
+    await this.doctorRepository.remove(doctor);
+  }
 }

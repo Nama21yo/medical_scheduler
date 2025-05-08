@@ -91,4 +91,16 @@ export class ReceptionistService {
     // Save the updated receptionist details
     return this.receptionistRepository.save(receptionist);
   }
+
+  async deleteByEmail(email: string): Promise<void> {
+    const receptionist = await this.receptionistRepository.findOne({
+      where: { email },
+    });
+
+    if (!receptionist) {
+      throw new NotFoundException('Receptionist not Found');
+    }
+
+    await this.receptionistRepository.remove(receptionist);
+  }
 }

@@ -21,7 +21,7 @@ interface AdminApiService {
     @POST("receptionists")
     suspend fun addReceptionist(@Body receptionist: ReceptionistRequest): AdminReceptionistResponse
 
-    @DELETE("users/{id}")
+    @DELETE("users/delete/{id}")
     suspend fun deleteUser(@Path("id") userId: Int): Response<Unit>
 
     @GET("users")

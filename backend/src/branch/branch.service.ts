@@ -107,4 +107,14 @@ export class BranchService {
       throw new NotFoundException(`Branch with ID ${id} not found`);
     }
   }
+  async deleteByEmail(email: string): Promise<void> {
+    const branch = await this.branchRepository.findOne({
+      where: { contact_email: email },
+    });
+    if (!branch) {
+      throw new NotFoundException('Branch not found');
+    }
+
+    await this.branchRepository.remove(branch);
+  }
 }

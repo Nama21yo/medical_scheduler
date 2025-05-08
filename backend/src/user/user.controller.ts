@@ -10,6 +10,7 @@ import {
   Res,
   UseGuards,
   Put,
+  Delete,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './user.entity';
@@ -247,13 +248,13 @@ export class UserController {
 
     // Update role-specific details
     switch (user.role.name) {
-      case 'branch':
+      case 'Branch':
         await this.branchService.update(user.email, updateDto);
         break;
-      case 'doctor':
+      case 'Doctor':
         await this.doctorService.update(user.email, updateDto);
         break;
-      case 'receptionist':
+      case 'Receptionist':
         await this.receptionistService.update(user.email, updateDto);
         break;
       default:
@@ -261,5 +262,37 @@ export class UserController {
     }
 
     return { message: 'User updated successfully', updatedUser };
+  }
+
+  /**
+   * @route DELETE /v1/users/delete/:id
+   * @description Delete a user by ID (admin or role-specific access)
+   */
+  @Delete('delete/:id')
+  // @Roles('headoffice') // Optional: Restrict to admin
+  async deleteUser(@Param('id') id: number): Promise<{ message: string }> {
+    const user = await this.userService.findById(id);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    // Delete role-specific data
+    switch (user.role.name) {
+      case 'Branch':
+        await this.branchService.deleteByEmail(user.email);
+        break;
+      case 'Doctor':
+        await this.doctorService.deleteByEmail(user.email);
+        break;
+      case 'Receptionist':
+        await this.receptionistService.deleteByEmail(user.email);
+        break;
+      case 'Patient':
+        await this.patientService.deleteByEmail(user.email);
+        break;
+    }
+
+    await this.userService.delete(id);
+    return { message: 'User deleted successfully' };
   }
 }

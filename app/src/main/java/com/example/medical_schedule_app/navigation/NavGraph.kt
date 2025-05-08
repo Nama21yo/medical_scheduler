@@ -48,9 +48,9 @@ fun NavGraph(navController: NavHostController) {
                             popUpTo(NavigationRoutes.AUTH) { inclusive = true }
                         }
                         else -> {
-//                            navController.navigate(NavigationRoutes.AUTH) {
-//                                popUpTo(NavigationRoutes.AUTH) { inclusive = true }
-//                            }
+                            navController.navigate(NavigationRoutes.AUTH) {
+                                popUpTo(NavigationRoutes.AUTH) { inclusive = true }
+                            }
                         }
                     }
                 }
