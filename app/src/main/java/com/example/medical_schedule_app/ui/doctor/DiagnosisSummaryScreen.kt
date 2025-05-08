@@ -8,46 +8,60 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.medical_schedule_app.ui.theme.Medical_schedule_appTheme
+import com.example.medical_schedule_app.data.models.responses.DiagnosisResponse
+import com.example.medical_schedule_app.ui.doctor.PatientHistoryEvent.FetchPatientHistory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiagnosisSummaryScreen(
     diagnosisId: String,
-    navController: NavController
+    navController: NavController,
+    viewModel: DiagnosisSummaryViewModel = hiltViewModel()
 ) {
+    val state by viewModel.state.collectAsState()
 
-//    To be Implemented
-    val diagnosis = remember {
-        DiagnosisDetails(
-            id = diagnosisId,
-            patientName = "Sisay Tadewos",
-            patientDetails = "Male, 45",
-            date = "April 22, 2025",
-            time = "10:15 AM",
-            symptoms = "Frequent headaches, dizziness, and elevated blood pressure readings over the past week.",
-            diagnosis = "Hypertension - Stage 1",
-            medication = "Lisinopril 10mg - 1 tablet daily in the morning",
-            notes = "Patient reports stress at work. Advised on stress management techniques and regular blood pressure monitoring.",
-            followUp = "Follow up appointment in 2 weeks. Patient should bring blood pressure readings."
-        )
+    LaunchedEffect(diagnosisId) {
+        viewModel.fetchDiagnosisSummary(diagnosisId)
     }
 
+    when {
+        state.isLoading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+
+        state.diagnosis != null -> {
+            DiagnosisContent(diagnosis = state.diagnosis!!, navController = navController)
+        }
+
+        state.error != null -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = state.error!!, color = Color.Red)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DiagnosisContent(
+    diagnosis: DiagnosisDetails,
+    navController: NavController
+) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Diagnosis Summary") },
+                title = { Text("Diagnosis Page") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -57,16 +71,7 @@ fun DiagnosisSummaryScreen(
                     containerColor = Color(0xFF2962FF),
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
-                ),
-                actions = {
-                    IconButton(onClick = { /* Edit diagnosis */ }) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit",
-                            tint = Color.White
-                        )
-                    }
-                }
+                )
             )
         }
     ) { paddingValues ->
@@ -74,120 +79,64 @@ fun DiagnosisSummaryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFFF5FBFF))
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState())
+                .background(Color(0xF0F5FBFF)) // Lighter background
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Text(
+                text = "Diagnosis Details",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                modifier = Modifier.padding(vertical = 24.dp)
+            )
+
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .defaultMinSize(minHeight = 200.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF2F5E91)),
+                elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column {
-                            Text(
-                                text = diagnosis.patientName,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = diagnosis.patientDetails,
-                                fontSize = 14.sp,
-                                color = Color.Gray
-                            )
-                        }
-
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text(
-                                text = diagnosis.date,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Text(
-                                text = diagnosis.time,
-                                fontSize = 14.sp,
-                                color = Color.Gray
-                            )
-                        }
-                    }
+                    InfoLine("Diagnosis Name:", diagnosis.diagnosis)
+                    InfoLine("Date:", diagnosis.date)
+                    InfoLine("Doctor’s Name:", "Dr. Dagim") // Replace with real doctor data if available
+                    InfoLine("Medication:", diagnosis.medication)
+                    InfoLine("Comments:", diagnosis.notes)
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-            DiagnosisSection("Symptoms", diagnosis.symptoms)
-            DiagnosisSection("Diagnosis", diagnosis.diagnosis)
-            DiagnosisSection("Prescribed Medication", diagnosis.medication)
-            DiagnosisSection("Additional Notes", diagnosis.notes)
-            DiagnosisSection("Follow Up", diagnosis.followUp)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
+            Button(
+                onClick = { navController.navigateUp() },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    .width(100.dp)
+                    .height(40.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF083B66))
             ) {
-                OutlinedButton(
-                    onClick = { /* Generate PDF logic */ },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(50.dp),
-                    shape = RoundedCornerShape(50),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFF2962FF)
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.PictureAsPdf,
-                        contentDescription = "PDF",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Export PDF")
-                }
-
-                Button(
-                    onClick = { /* Share logic */ },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(50.dp),
-                    shape = RoundedCornerShape(50),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2962FF)
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Share,
-                        contentDescription = "Share"
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Share")
-                }
+                Text("Back", color = Color.White)
             }
         }
     }
 }
 
-data class DiagnosisDetails(
-    val id: String,
-    val patientName: String,
-    val patientDetails: String,
-    val date: String,
-    val time: String,
-    val symptoms: String,
-    val diagnosis: String,
-    val medication: String,
-    val notes: String,
-    val followUp: String
-)
+@Composable
+fun InfoLine(label: String, value: String) {
+    Text(
+        text = "$label  $value",
+        fontSize = 16.sp,
+        color = Color.White
+    )
+}
+
 
 @Composable
 fun DiagnosisSection(
@@ -221,13 +170,41 @@ fun DiagnosisSection(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DiagnosisSummaryScreenPreview() {
-    Medical_schedule_appTheme {
-        DiagnosisSummaryScreen(
-            diagnosisId = "123",
-            navController = rememberNavController()
-        )
+
+
+data class DiagnosisDetails(
+    val id: String,
+    val patientName: String,
+    val patientDetails: String,
+    val date: String,
+    val time: String,
+    val symptoms: String,
+    val diagnosis: String,
+    val medication: String,
+    val notes: String,
+    val followUp: String
+)
+
+
+
+fun DiagnosisResponse.toDiagnosisDetails(): DiagnosisDetails {
+    val (date, time) = created_at.split("T").let {
+        val datePart = it[0]
+        val timePart = it.getOrNull(1)?.substring(0, 5) ?: "N/A"
+        datePart to timePart
+
     }
+
+    return DiagnosisDetails(
+        id = diagnosis_id.toString(),
+        patientName = "${patient.first_name} ${patient.last_name}",
+        patientDetails = "${patient.gender}, age unknown", // Use DOB calc if needed
+        date = date,
+        time = time,
+        symptoms = diagnosis_details,
+        diagnosis = diagnosis_name,
+        medication = prescription,
+        notes = "No additional notes provided.",
+        followUp = "Follow up not scheduled."
+    )
 }
