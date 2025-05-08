@@ -18,6 +18,10 @@ import com.example.medical_schedule_app.ui.doctor.DoctorQueueScreen
 import com.example.medical_schedule_app.ui.doctor.DiagnosisDetailsScreen
 import com.example.medical_schedule_app.ui.receptionist.ReceptionistQueueScreenPhone
 
+// Import Admin screens
+import com.example.medical_schedule_app.ui.admin.AdminScreen
+import com.example.medical_schedule_app.ui.admin.AddEmployeeScreen
+
 @Composable
 fun NavGraph(navController: NavHostController) {
     // Get ViewModel using hiltViewModel
@@ -42,6 +46,7 @@ fun NavGraph(navController: NavHostController) {
                         5 -> navController.navigate(NavigationRoutes.RECEPTIONIST_HOME) {
                             popUpTo(NavigationRoutes.AUTH) { inclusive = true }
                         }
+                        // Consider adding an 'else' case for unhandled roles
                     }
                 }
             )
@@ -50,17 +55,16 @@ fun NavGraph(navController: NavHostController) {
         // Receptionist home screen
         composable(NavigationRoutes.RECEPTIONIST_HOME) {
             val viewModel: ReceptionistQueueViewModel = hiltViewModel()
-            val state = viewModel.state.collectAsState() // Collect StateFlow as State
+            val state = viewModel.state.collectAsState()
 
             ReceptionistQueueScreenPhone(
                 navController = navController,
-                state = state.value, // Use the collected state
+                state = state.value,
                 onEvent = viewModel::onEvent,
                 onNavigateToAddPatient = {
                     navController.navigate(NavigationRoutes.ADD_PATIENT)
                 },
                 onLogout = {
-                    // Temporarily ignore logout logic for testing
                     navController.navigate(NavigationRoutes.AUTH) {
                         popUpTo(NavigationRoutes.RECEPTIONIST_HOME) { inclusive = true }
                     }
@@ -71,12 +75,12 @@ fun NavGraph(navController: NavHostController) {
             )
         }
 
-        // Add Patient screen
+        // Add Patient screen (for Receptionist)
         composable(NavigationRoutes.ADD_PATIENT) {
             AddPatientFormScreen(
                 navController = navController,
                 onSuccess = {
-                    navController.popBackStack() // Navigate back to ReceptionistQueueScreenPhone
+                    navController.popBackStack()
                 }
             )
         }
@@ -85,9 +89,9 @@ fun NavGraph(navController: NavHostController) {
         composable(NavigationRoutes.DOCTOR_QUEUE) {
             DoctorQueueScreen(navController = navController)
         }
-        // Diagnosis summary screen (updated route)
+        // Diagnosis summary screen
         composable(
-            route = NavigationRoutes.DIAGNOSIS_SUMMARY,
+            route = NavigationRoutes.DIAGNOSIS_SUMMARY, // Note: DIAGNOSIS_SUMMARY is "diagnosis_summary/{diagnosisId}"
             arguments = listOf(navArgument("diagnosisId") { type = NavType.StringType })
         ) { backStackEntry ->
             val diagnosisId = backStackEntry.arguments?.getString("diagnosisId") ?: ""
@@ -97,9 +101,9 @@ fun NavGraph(navController: NavHostController) {
             )
         }
 
-        // Patient history screen
+        // Diagnosis details screen (renamed from Patient History in your previous NavGraph)
         composable(
-            route = NavigationRoutes.DIAGNOSIS_DETAILS,
+            route = NavigationRoutes.DIAGNOSIS_DETAILS, // Note: DIAGNOSIS_DETAILS is "diagnosis_details/{diagnosisId}"
             arguments = listOf(navArgument("diagnosisId") { type = NavType.StringType })
         ) { backStackEntry ->
             val diagnosisId = backStackEntry.arguments?.getString("diagnosisId") ?: ""
@@ -125,22 +129,16 @@ fun NavGraph(navController: NavHostController) {
             )
         }
 
-        // Add placeholder screens for other roles (stub implementations for now)
+        // Admin home screen
         composable(NavigationRoutes.ADMIN_HOME) {
-            // Placeholder for admin home screen
+            AdminScreen(navController = navController) // Use the actual AdminScreen
         }
 
-//        composable(NavigationRoutes.RECEPTIONIST_HOME) {
-//            // Placeholder for receptionist home screen
-//        }
+        // Add Employee screen (for Admin)
+        composable(NavigationRoutes.ADD_EMPLOYEE) {
+            AddEmployeeScreen(navController = navController) // Use the actual AddEmployeeScreen
+        }
+
+        // composable(NavigationRoutes.PROFILE) { ... } // Placeholder if you have a profile screen
     }
 }
-
-//object NavigationRoutes {
-//    const val AUTH = "auth"
-//    const val DOCTOR_QUEUE = "doctor_queue"
-//    const val PATIENT_HISTORY = "patient_history"
-//    const val DIAGNOSIS_FORM = "diagnosis_form"
-//    const val ADMIN_HOME = "admin_home"
-//    const val RECEPTIONIST_HOME = "receptionist_home"
-//}
