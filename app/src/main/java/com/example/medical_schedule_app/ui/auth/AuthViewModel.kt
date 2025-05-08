@@ -5,7 +5,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.medical_schedule_app.data.api.ApiService
 import com.example.medical_schedule_app.data.models.Role
+import com.example.medical_schedule_app.data.models.requests.SignupRequest
 import com.example.medical_schedule_app.data.repositories.UserRepository
 import com.example.medical_schedule_app.utils.ActualSessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,6 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val userRepository: UserRepository,
+    private val apiService: ApiService, // Add this line for apiService
     val sessionManager: ActualSessionManager // Make public or provide getter for token check
 ) : ViewModel() {
 
@@ -72,17 +75,40 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun signup(email: String, roleId: Int) {
+    fun signup(
+        email: String,
+        password: String,
+        name: String,
+        roleId: Int,
+        specialty: String
+    ) {
         viewModelScope.launch {
-            val result = userRepository.signup(email, roleId)
-            result.onSuccess { token ->
-                sessionManager.saveAuthToken(token)
-                sessionManager.saveUserId(roleId) // Save role_id as user_id
-                Log.d("AuthViewModel", "Signup success, token and userId saved.")
+            val result = try {
+                val request = SignupRequest(
+                    password = password,
+                    specialty = specialty,
+                    name = name, // Make sure your SignupRequest has `email`
+                    email = email
+                )
+                val result = userRepository.signup(request, roleId)
+
+                result.onSuccess { token ->
+                    sessionManager.saveAuthToken(token)
+                    sessionManager.saveUserId(roleId)
+                }
+
+                result
+            } catch (e: Exception) {
+                Result.failure(e)
             }
-            _signupResult.postValue(result) // Post the result
+
+            _signupResult.postValue(result)
         }
     }
+
+
+
+
 
     fun setSelectedRole(role: Role) {
         _selectedRole.value = role
