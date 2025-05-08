@@ -30,21 +30,18 @@ fun LoginSignupScreen(
 
     var isLoginTab by remember { mutableStateOf(true) }
 
-    // Form fields
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var specialty by remember { mutableStateOf("") }
 
-    // Handle login result
     LaunchedEffect(loginResult) {
         loginResult?.onSuccess {
             selectedRole?.role_id?.let { onLoginSuccess(it) }
         }
     }
 
-    // Handle signup result
     LaunchedEffect(signupResult) {
         signupResult?.onSuccess {
             selectedRole?.role_id?.let { onLoginSuccess(it) }
@@ -52,131 +49,140 @@ fun LoginSignupScreen(
     }
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF5FBFF)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF0FDFF)),
+        color = Color(0xFFF0FDFF)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
             Card(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .widthIn(max = 400.dp)
+                    .padding(16.dp),
                 shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                elevation = CardDefaults.cardElevation(8.dp)
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
+                        .background(Color.White)
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Toggle Login / SignUp Tabs
-                    TabRow(
-                        selectedTabIndex = if (isLoginTab) 0 else 1,
-                        containerColor = Color.Transparent
+
+                    // Tab-like Toggle
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 24.dp)
+                            .height(48.dp)
+                            .background(
+                                color = Color(0xFFE3F2FD),
+                                shape = RoundedCornerShape(24.dp)
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Tab(
-                            selected = isLoginTab,
+                        val tabModifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+
+                        Button(
                             onClick = { isLoginTab = true },
-                            modifier = Modifier.background(
-                                if (isLoginTab) Color(0xFF2962FF) else Color.White
-                            )
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isLoginTab) Color(0xFF2962FF) else Color.White,
+                                contentColor = if (isLoginTab) Color.White else Color.Black
+                            ),
+                            shape = RoundedCornerShape(24.dp),
+                            modifier = tabModifier.padding(2.dp),
+                            elevation = null,
+                            contentPadding = PaddingValues(0.dp)
                         ) {
-                            Text(
-                                text = "Login",
-                                color = if (isLoginTab) Color.White else Color.Black,
-                                modifier = Modifier.padding(12.dp)
-                            )
+                            Text("Login")
                         }
-                        Tab(
-                            selected = !isLoginTab,
+
+                        Button(
                             onClick = { isLoginTab = false },
-                            modifier = Modifier.background(
-                                if (!isLoginTab) Color(0xFF2962FF) else Color.White
-                            )
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (!isLoginTab) Color(0xFF2962FF) else Color.White,
+                                contentColor = if (!isLoginTab) Color.White else Color.Black
+                            ),
+                            shape = RoundedCornerShape(24.dp),
+                            modifier = tabModifier.padding(2.dp),
+                            elevation = null,
+                            contentPadding = PaddingValues(0.dp)
                         ) {
-                            Text(
-                                text = "SignUp",
-                                color = if (!isLoginTab) Color.White else Color.Black,
-                                modifier = Modifier.padding(12.dp)
-                            )
+                            Text("SignUp")
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Role Selector (common to both)
+                    // Role dropdown
                     RoleSelector(
                         roles = roles,
                         selectedRole = selectedRole,
                         onRoleSelected = { viewModel.setSelectedRole(it) }
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     // SignUp only fields
                     if (!isLoginTab) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            CommonTextField(
-                                value = name,
-                                onValueChange = { name = it },
-                                label = "Name",
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next,
-                                modifier = Modifier.weight(1f)
-                            )
-                            CommonTextField(
-                                value = specialty,
-                                onValueChange = { specialty = it },
-                                label = "Specialty",
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
+                        CommonTextField(
+                            value = name,
+                            onValueChange = { name = it },
+                            label = "Name",
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Next
+                        )
+
                         Spacer(modifier = Modifier.height(8.dp))
-                    }
 
-                    // Email (common)
-                    CommonTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = "Email",
-                        keyboardType = KeyboardType.Email,
-                        imeAction = ImeAction.Next
-                    )
+                        CommonTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = "Email",
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        )
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Password (common)
-                    PasswordField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = if (isLoginTab) "Enter Password" else "Create Password"
-                    )
-
-                    // Confirm Password (signup only)
-                    if (!isLoginTab) {
                         Spacer(modifier = Modifier.height(8.dp))
+
+                        PasswordField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = "Create Password"
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
                         PasswordField(
                             value = confirmPassword,
                             onValueChange = { confirmPassword = it },
-                            label = "Confirm Your Password"
+                            label = "Confirm Password"
+                        )
+                    } else {
+                        CommonTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = "Email",
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        PasswordField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = "Enter Password"
                         )
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Action Button
                     CommonButton(
-                        text = if (isLoginTab) "Login" else "Create Account",
+                        text = if (isLoginTab) "Login" else "SignUp",
                         onClick = {
                             if (isLoginTab) {
                                 viewModel.login(email, password)
@@ -187,8 +193,7 @@ fun LoginSignupScreen(
                                     }
                                 }
                             }
-                        }
-                        ,
+                        },
                         isEnabled = email.isNotBlank() &&
                                 (if (isLoginTab) password.isNotBlank()
                                 else password == confirmPassword && name.isNotBlank()) &&
