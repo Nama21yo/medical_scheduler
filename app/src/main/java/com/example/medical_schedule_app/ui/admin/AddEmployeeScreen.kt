@@ -3,7 +3,9 @@ package com.example.medical_schedule_app.ui.admin
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack // Import for back button
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,7 +17,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.medical_schedule_app.ui.components.MedicalAppBar // Assuming you have this
+// MedicalAppBar import is no longer needed for this screen's structure
+// import com.example.medical_schedule_app.ui.components.MedicalAppBar
+import com.example.medical_schedule_app.ui.components.MediumBlue // Still used for colors
+import com.example.medical_schedule_app.ui.components.ScreenBackgroundColor // Still used for colors
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,6 +33,7 @@ fun AddEmployeeScreen(
 
     LaunchedEffect(state.addEmployeeSuccess) {
         if (state.addEmployeeSuccess) {
+            // Optional: Show a toast or snackbar here for success
             navController.popBackStack()
             viewModel.onEvent(AddEmployeeEvent.ResetSuccessState)
         }
@@ -35,41 +41,65 @@ fun AddEmployeeScreen(
 
     Scaffold(
         topBar = {
-            MedicalAppBar(
-                title = "Add Employee",
-                navController = navController,
-                showBackButton = true
+            TopAppBar(
+                title = {
+                    Text(
+                        "Add Employee",
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MediumBlue, // Consistent with MedicalAppBar's theme
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
+                )
             )
         },
-        containerColor = Color(0xFFEBF5FF)
-    ) { paddingValues ->
+        containerColor = ScreenBackgroundColor // Background for the content area
+    ) { paddingValuesFromScaffold ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
+                .padding(paddingValuesFromScaffold) // Apply padding from the Scaffold
+                .padding(16.dp), // Additional screen-specific padding
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Add Employee",
-                fontSize = 28.sp,
+                text = "Add New Employee",
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF073B63),
+                color = MediumBlue,
                 modifier = Modifier.padding(vertical = 24.dp)
+            )
+
+            val textFieldColors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MediumBlue,
+                unfocusedBorderColor = MediumBlue.copy(alpha = 0.6f),
+                focusedLabelColor = MediumBlue,
+                cursorColor = MediumBlue,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface, // Or specific color if needed
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface // Or specific color if needed
             )
 
             // Name Field
             OutlinedTextField(
                 value = state.name,
                 onValueChange = { viewModel.onEvent(AddEmployeeEvent.OnNameChanged(it)) },
-                label = { Text("Name") },
-                placeholder = { Text("Enter employee name") },
+                label = { Text("Full Name") },
+                placeholder = { Text("Enter employee's full name") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF073B63),
-                    unfocusedBorderColor = Color.Gray
-                )
+                colors = textFieldColors
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -77,14 +107,11 @@ fun AddEmployeeScreen(
             OutlinedTextField(
                 value = state.email,
                 onValueChange = { viewModel.onEvent(AddEmployeeEvent.OnEmailChanged(it)) },
-                label = { Text("Email") },
-                placeholder = { Text("Enter employee email") },
+                label = { Text("Email Address") },
+                placeholder = { Text("Enter employee's email") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF073B63),
-                    unfocusedBorderColor = Color.Gray
-                ),
+                colors = textFieldColors,
                 isError = state.error?.contains("email", ignoreCase = true) == true
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -97,13 +124,11 @@ fun AddEmployeeScreen(
                     viewModel.onEvent(AddEmployeeEvent.OnBranchIdChanged(id))
                 },
                 label = { Text("Branch ID") },
-                placeholder = { Text("Enter branch ID") },
+                placeholder = { Text("Enter branch ID (e.g., 1)") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF073B63),
-                    unfocusedBorderColor = Color.Gray
-                )
+                colors = textFieldColors
+                // Consider adding keyboardType = KeyboardType.Number
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -112,7 +137,7 @@ fun AddEmployeeScreen(
                 OutlinedTextField(
                     value = state.selectedRole.ifEmpty { "Select Role" },
                     onValueChange = { },
-                    label = { Text("Select Role") },
+                    label = { Text("Role") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { viewModel.onEvent(AddEmployeeEvent.ToggleRoleDropdown) },
@@ -120,25 +145,24 @@ fun AddEmployeeScreen(
                     trailingIcon = {
                         Icon(
                             Icons.Filled.ArrowDropDown,
-                            "Dropdown arrow",
+                            "Select Role",
                             Modifier.clickable { viewModel.onEvent(AddEmployeeEvent.ToggleRoleDropdown) }
                         )
                     },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF073B63),
-                        unfocusedBorderColor = Color.Gray
-                    ),
+                    colors = textFieldColors,
                     isError = state.error?.contains("role", ignoreCase = true) == true
                 )
 
                 DropdownMenu(
                     expanded = state.showRoleDropdown,
                     onDismissRequest = { viewModel.onEvent(AddEmployeeEvent.DismissRoleDropdown) },
-                    modifier = Modifier.fillMaxWidth(0.9f)
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f) // Anchor to the TextField width approximately
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
                 ) {
                     state.roles.forEach { role ->
                         DropdownMenuItem(
-                            text = { Text(role) },
+                            text = { Text(role, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                             onClick = {
                                 viewModel.onEvent(AddEmployeeEvent.OnRoleSelected(role))
                             }
@@ -153,7 +177,8 @@ fun AddEmployeeScreen(
                 Text(
                     text = it,
                     color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
 
@@ -163,18 +188,21 @@ fun AddEmployeeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF073B63)),
-                enabled = !state.isLoading
+                colors = ButtonDefaults.buttonColors(containerColor = MediumBlue),
+                enabled = !state.isLoading,
+                shape = RoundedCornerShape(8.dp)
             ) {
                 if (state.isLoading) {
                     CircularProgressIndicator(
                         color = Color.White,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
                     )
                 } else {
-                    Text("Add Employee", fontSize = 16.sp)
+                    Text("Add Employee", fontSize = 16.sp, color = Color.White)
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

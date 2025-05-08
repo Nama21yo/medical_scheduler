@@ -48,6 +48,8 @@ class AddEmployeeViewModel @Inject constructor(
             AddEmployeeEvent.ResetSuccessState -> {
                 _state.update { it.copy(addEmployeeSuccess = false) }
             }
+
+            else -> {}
         }
     }
 
