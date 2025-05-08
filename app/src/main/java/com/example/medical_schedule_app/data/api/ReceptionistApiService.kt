@@ -6,6 +6,7 @@ import com.example.medical_schedule_app.data.models.requests.StatusUpdateRequest
 import com.example.medical_schedule_app.data.models.responses.DiagnosisResponse
 import com.example.medical_schedule_app.data.models.responses.PatientResponse // Import new response
 import com.example.medical_schedule_app.data.models.responses.QueueResponse
+import com.example.medical_schedule_app.data.models.requests.AddToQueueRequest
 import retrofit2.http.*
 
 interface ReceptionistApiService {
@@ -54,4 +55,9 @@ interface ReceptionistApiService {
         @Query("email") email: String? = null
         // Add other searchable fields as needed
     ): List<PatientResponse>
+
+    @POST("queues")
+    suspend fun addPatientToQueue(
+        @Body addToQueueRequest: AddToQueueRequest
+    )
 }
