@@ -21,11 +21,12 @@ import com.example.medical_schedule_app.ui.receptionist.ReceptionistQueueScreenP
 // Import Admin screens
 import com.example.medical_schedule_app.ui.admin.AdminScreen
 import com.example.medical_schedule_app.ui.admin.AddEmployeeScreen
+import com.example.medical_schedule_app.ui.profile.ProfileScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {
     // Get ViewModel using hiltViewModel
-    val authViewModel: AuthViewModel = hiltViewModel()
+    val authViewModel: AuthViewModel = hiltViewModel() // This authViewModel can be passed down
 
     NavHost(
         navController = navController,
@@ -34,7 +35,7 @@ fun NavGraph(navController: NavHostController) {
         // Auth screen
         composable(NavigationRoutes.AUTH) {
             LoginSignupScreen(
-                viewModel = authViewModel,
+                viewModel = authViewModel, // Pass the existing authViewModel
                 onLoginSuccess = { roleId ->
                     when (roleId) {
                         2 -> navController.navigate(NavigationRoutes.ADMIN_HOME) {
@@ -46,7 +47,11 @@ fun NavGraph(navController: NavHostController) {
                         5 -> navController.navigate(NavigationRoutes.RECEPTIONIST_HOME) {
                             popUpTo(NavigationRoutes.AUTH) { inclusive = true }
                         }
-                        // Consider adding an 'else' case for unhandled roles
+                        else -> {
+//                            navController.navigate(NavigationRoutes.AUTH) {
+//                                popUpTo(NavigationRoutes.AUTH) { inclusive = true }
+//                            }
+                        }
                     }
                 }
             )
@@ -54,24 +59,19 @@ fun NavGraph(navController: NavHostController) {
 
         // Receptionist home screen
         composable(NavigationRoutes.RECEPTIONIST_HOME) {
-            val viewModel: ReceptionistQueueViewModel = hiltViewModel()
-            val state = viewModel.state.collectAsState()
+            val receptionistViewModel: ReceptionistQueueViewModel = hiltViewModel()
+            val state = receptionistViewModel.state.collectAsState()
 
             ReceptionistQueueScreenPhone(
                 navController = navController,
                 state = state.value,
-                onEvent = viewModel::onEvent,
+                onEvent = receptionistViewModel::onEvent,
                 onNavigateToAddPatient = {
                     navController.navigate(NavigationRoutes.ADD_PATIENT)
                 },
-                onLogout = {
-                    navController.navigate(NavigationRoutes.AUTH) {
-                        popUpTo(NavigationRoutes.RECEPTIONIST_HOME) { inclusive = true }
-                    }
-                },
-                onUserProfileClick = {
-                    navController.navigate(NavigationRoutes.PROFILE)
-                }
+                // Pass the authViewModel available in NavGraph scope
+                authViewModel = authViewModel
+                // onLogout and onUserProfileClick are removed as MedicalAppBar handles them
             )
         }
 
@@ -87,29 +87,35 @@ fun NavGraph(navController: NavHostController) {
 
         // Doctor queue screen
         composable(NavigationRoutes.DOCTOR_QUEUE) {
-            DoctorQueueScreen(navController = navController)
+            // DoctorQueueScreen needs authViewModel if it uses MedicalAppBar
+            DoctorQueueScreen(
+                navController = navController
+                // authViewModel = authViewModel // Add if DoctorQueueScreen uses MedicalAppBar
+            )
         }
         // Diagnosis summary screen
         composable(
-            route = NavigationRoutes.DIAGNOSIS_SUMMARY, // Note: DIAGNOSIS_SUMMARY is "diagnosis_summary/{diagnosisId}"
+            route = NavigationRoutes.DIAGNOSIS_SUMMARY,
             arguments = listOf(navArgument("diagnosisId") { type = NavType.StringType })
         ) { backStackEntry ->
             val diagnosisId = backStackEntry.arguments?.getString("diagnosisId") ?: ""
             DiagnosisSummaryScreen(
                 diagnosisId = diagnosisId,
                 navController = navController
+                // authViewModel = authViewModel // Add if DiagnosisSummaryScreen uses MedicalAppBar
             )
         }
 
-        // Diagnosis details screen (renamed from Patient History in your previous NavGraph)
+        // Diagnosis details screen
         composable(
-            route = NavigationRoutes.DIAGNOSIS_DETAILS, // Note: DIAGNOSIS_DETAILS is "diagnosis_details/{diagnosisId}"
+            route = NavigationRoutes.DIAGNOSIS_DETAILS,
             arguments = listOf(navArgument("diagnosisId") { type = NavType.StringType })
         ) { backStackEntry ->
             val diagnosisId = backStackEntry.arguments?.getString("diagnosisId") ?: ""
             DiagnosisDetailsScreen(
                 diagnosisId = diagnosisId,
                 navController = navController
+                // authViewModel = authViewModel // Add if DiagnosisDetailsScreen uses MedicalAppBar
             )
         }
 
@@ -126,19 +132,51 @@ fun NavGraph(navController: NavHostController) {
             DiagnosisFormScreen(
                 navController = navController,
                 patientId = patientId?.toIntOrNull()
+                // authViewModel = authViewModel // Add if DiagnosisFormScreen uses MedicalAppBar
             )
         }
 
         // Admin home screen
         composable(NavigationRoutes.ADMIN_HOME) {
-            AdminScreen(navController = navController) // Use the actual AdminScreen
+            // AdminScreen now takes authViewModel
+            AdminScreen(
+                navController = navController,
+                authViewModel = authViewModel // Pass the authViewModel
+            )
         }
 
         // Add Employee screen (for Admin)
         composable(NavigationRoutes.ADD_EMPLOYEE) {
-            AddEmployeeScreen(navController = navController) // Use the actual AddEmployeeScreen
+            // AddEmployeeScreen, if it were to use MedicalAppBar, would also need authViewModel
+            // But we refactored it to use its own Scaffold.
+            AddEmployeeScreen(navController = navController)
         }
 
-        // composable(NavigationRoutes.PROFILE) { ... } // Placeholder if you have a profile screen
+        composable(NavigationRoutes.PROFILE) {
+            // ProfileScreen likely uses MedicalAppBar or needs its own auth logic,
+            // by default it will use hiltViewModel() if authViewModel is not passed
+            ProfileScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateHome = {
+                    // Determine role and navigate accordingly, or have ProfileScreen handle it
+                    // For now, using existing logic. You might want to get role from authViewModel.
+                    // val userRole = authViewModel.currentUser.value?.role_id // Example
+                    // when (userRole) { ... }
+                    navController.navigate(NavigationRoutes.DOCTOR_QUEUE) { // Example, make this dynamic
+                        popUpTo(NavigationRoutes.PROFILE) { inclusive = true }
+                    }
+                },
+                onNavigateToAuth = {
+                    authViewModel.logout() // Perform logout action via ViewModel
+                    navController.navigate(NavigationRoutes.AUTH) {
+                        popUpTo(navController.graph.id) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+                // authViewModel = authViewModel // Pass if ProfileScreen is designed to take it directly
+            )
+        }
     }
 }
