@@ -2,6 +2,7 @@ package com.example.medical_schedule_app.data.repositories
 
 import com.example.medical_schedule_app.data.api.ReceptionistApiService
 import com.example.medical_schedule_app.data.models.requests.AddPatientRequest
+import com.example.medical_schedule_app.data.models.requests.AddToQueueRequest
 import com.example.medical_schedule_app.data.models.requests.StatusUpdateRequest
 import com.example.medical_schedule_app.data.models.responses.PatientResponse
 import com.example.medical_schedule_app.data.models.responses.QueueResponse
@@ -58,4 +59,19 @@ class ReceptionistRepository @Inject constructor(private val receptionistApiServ
             emit(NetworkResult.Error(e.message ?: "Unknown error"))
         }
     }
+    suspend fun addPatientToQueue(patient_id: Int): Flow<NetworkResult<Unit>> = flow {
+        emit(NetworkResult.Loading())
+        try {
+            val request = AddToQueueRequest(
+                patient_id = patient_id,
+                doctor_id = 1, // Use an appropriate doctor_id
+                status = 1     // Initial status set to 1
+            )
+            receptionistApiService.addPatientToQueue(request)
+            emit(NetworkResult.Success(Unit))
+        } catch (e: Exception) {
+            emit(NetworkResult.Error(e.message ?: "Unknown error"))
+        }
+    }
+
 }
