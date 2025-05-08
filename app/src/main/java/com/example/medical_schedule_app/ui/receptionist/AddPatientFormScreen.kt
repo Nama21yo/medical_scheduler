@@ -14,12 +14,13 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 import android.app.DatePickerDialog
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -147,7 +148,8 @@ fun DatePickerField(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPatientFormScreen(
-    viewModel: AddPatientFormViewModel = viewModel(),
+    navController: NavController,
+    viewModel: AddPatientFormViewModel = hiltViewModel(),
     onSuccess: () -> Unit = {} // Callback for navigation or reset
 ) {
     val state by viewModel.state.collectAsState()
@@ -155,9 +157,11 @@ fun AddPatientFormScreen(
     // Handle success state with navigation/reset
     LaunchedEffect(state.isSuccess) {
         if (state.isSuccess) {
-            onSuccess()
+            onSuccess() // This will trigger popBackStack in NavGraph
+            viewModel.onEvent(AddPatientFormEvent.ResetSuccessState) // Reset the flag
         }
     }
+
 
     Column(
         modifier = Modifier
@@ -264,13 +268,5 @@ fun AddPatientFormScreen(
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AddPatientFormScreenPreview() {
-    MaterialTheme {
-        AddPatientFormScreen()
     }
 }

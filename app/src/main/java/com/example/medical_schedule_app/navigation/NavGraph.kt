@@ -1,6 +1,7 @@
 package com.example.medical_schedule_app.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -8,11 +9,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.medical_schedule_app.ui.auth.AuthViewModel
+import com.example.medical_schedule_app.ui.receptionist.ReceptionistQueueViewModel
+import com.example.medical_schedule_app.ui.receptionist.AddPatientFormScreen
 import com.example.medical_schedule_app.ui.auth.LoginSignupScreen
 import com.example.medical_schedule_app.ui.diagnosis.DiagnosisSummaryScreen
 import com.example.medical_schedule_app.ui.doctor.DiagnosisFormScreen
 import com.example.medical_schedule_app.ui.doctor.DoctorQueueScreen
 import com.example.medical_schedule_app.ui.doctor.DiagnosisDetailsScreen
+import com.example.medical_schedule_app.ui.receptionist.ReceptionistQueueScreenPhone
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -39,6 +43,40 @@ fun NavGraph(navController: NavHostController) {
                             popUpTo(NavigationRoutes.AUTH) { inclusive = true }
                         }
                     }
+                }
+            )
+        }
+
+        // Receptionist home screen
+        composable(NavigationRoutes.RECEPTIONIST_HOME) {
+            val viewModel: ReceptionistQueueViewModel = hiltViewModel()
+            val state = viewModel.state.collectAsState() // Collect StateFlow as State
+
+            ReceptionistQueueScreenPhone(
+                navController = navController,
+                state = state.value, // Use the collected state
+                onEvent = viewModel::onEvent,
+                onNavigateToAddPatient = {
+                    navController.navigate(NavigationRoutes.ADD_PATIENT)
+                },
+                onLogout = {
+                    // Temporarily ignore logout logic for testing
+                    navController.navigate(NavigationRoutes.AUTH) {
+                        popUpTo(NavigationRoutes.RECEPTIONIST_HOME) { inclusive = true }
+                    }
+                },
+                onUserProfileClick = {
+                    navController.navigate(NavigationRoutes.PROFILE)
+                }
+            )
+        }
+
+        // Add Patient screen
+        composable(NavigationRoutes.ADD_PATIENT) {
+            AddPatientFormScreen(
+                navController = navController,
+                onSuccess = {
+                    navController.popBackStack() // Navigate back to ReceptionistQueueScreenPhone
                 }
             )
         }
@@ -92,9 +130,9 @@ fun NavGraph(navController: NavHostController) {
             // Placeholder for admin home screen
         }
 
-        composable(NavigationRoutes.RECEPTIONIST_HOME) {
-            // Placeholder for receptionist home screen
-        }
+//        composable(NavigationRoutes.RECEPTIONIST_HOME) {
+//            // Placeholder for receptionist home screen
+//        }
     }
 }
 

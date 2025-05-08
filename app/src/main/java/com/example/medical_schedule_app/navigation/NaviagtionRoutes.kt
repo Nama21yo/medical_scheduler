@@ -11,5 +11,6 @@ object NavigationRoutes {
     const val RECEPTIONIST_HOME = "receptionist_home"
     const val PATIENT_HOME = "patient_home"
     const val PROFILE = "profile"
+    const val ADD_PATIENT = "add_patient"
     const val PATIENT_HISTORY = "patient_history"
 }

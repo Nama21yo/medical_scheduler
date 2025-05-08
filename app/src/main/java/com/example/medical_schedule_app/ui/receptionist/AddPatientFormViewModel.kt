@@ -39,6 +39,9 @@ class AddPatientFormViewModel @Inject constructor(
             is AddPatientFormEvent.OnSubmitClicked -> {
                 submitPatient()
             }
+            is AddPatientFormEvent.ResetSuccessState -> { // <-- ADD THIS HANDLER
+                _state.update { it.copy(isSuccess = false) }
+            }
         }
     }
 
@@ -119,7 +122,7 @@ class AddPatientFormViewModel @Inject constructor(
                         }
                     }
                     is NetworkResult.Error -> {
-                        _state.update { it.copy(isLoading = false, error = result.message) }
+                        _state.update { it.copy(isLoading = false, error = result.message, isSuccess = false) }
                     }
                     is NetworkResult.Loading -> {
                         _state.update { it.copy(isLoading = true) }

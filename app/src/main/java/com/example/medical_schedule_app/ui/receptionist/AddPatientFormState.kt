@@ -23,4 +23,5 @@ sealed class AddPatientFormEvent {
     data class OnDobChange(val dob: String) : AddPatientFormEvent()
     data class OnPhoneNumberChange(val phoneNumber: String) : AddPatientFormEvent()
     object OnSubmitClicked : AddPatientFormEvent()
+    object ResetSuccessState : AddPatientFormEvent()
 }

@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel // Import Hilt ViewModel
+import androidx.navigation.NavController
 import com.example.medical_schedule_app.data.models.responses.DoctorResponse
 import com.example.medical_schedule_app.data.models.responses.PatientResponse
 import kotlin.String
@@ -47,6 +48,7 @@ val BorderColor = Color(0xFFD1D5DB)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReceptionistQueueScreenPhone(
+    navController: NavController,
     state: ReceptionistQueueState, // Receive state from ViewModel
     onEvent: (ReceptionistQueueEvent) -> Unit, // Receive event handler
     onNavigateToAddPatient: () -> Unit,
