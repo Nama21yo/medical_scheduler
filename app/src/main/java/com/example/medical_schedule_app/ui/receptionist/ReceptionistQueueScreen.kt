@@ -7,33 +7,23 @@ import androidx.compose.foundation.lazy.items // Import items function
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-// import androidx.compose.material.icons.Icons // Not directly used in this file after changes
-// import androidx.compose.material.icons.filled.AccountCircle // Handled by MedicalAppBar
-// import androidx.compose.material.icons.filled.MoreVert // Removed with old top bar
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-// import androidx.compose.runtime.getValue // Implicitly used by delegate
-// import androidx.compose.runtime.setValue // Implicitly used by delegate
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel // Import Hilt ViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.medical_schedule_app.data.models.responses.PatientResponse
-// Import MedicalAppBar and related components/models
 import com.example.medical_schedule_app.ui.components.MedicalAppBar
 import com.example.medical_schedule_app.ui.auth.AuthViewModel // Required by MedicalAppBar
-// NavigationRoutes might not be directly used in this file, but MedicalAppBar uses it.
-// import com.example.medical_schedule_app.navigation.NavigationRoutes
 
-// Define QueueEntry data class (keep this in UI for display model)
 data class QueueEntry(
     val id: Int,
     val patientName: String,
@@ -41,10 +31,9 @@ data class QueueEntry(
     val isActionable: Boolean = true
 )
 
-// Define colors (keep this in UI for styling)
 val DarkBlue = Color(0xFF0D253F)
-val MediumBlue = Color(0xFF3D6FB4) // Also defined in MedicalAppBar, ensure consistency or use one source
-val LightBackgroundBlue = Color(0xFFF0F7FC) // Specific to this screen's content
+val MediumBlue = Color(0xFF3D6FB4)
+val LightBackgroundBlue = Color(0xFFF0F7FC)
 val TextColorDark = Color(0xFF374151)
 val TextColorLight = Color.White
 val BorderColor = Color(0xFFD1D5DB)
@@ -53,11 +42,10 @@ val BorderColor = Color(0xFFD1D5DB)
 @Composable
 fun ReceptionistQueueScreenPhone(
     navController: NavController,
-    state: ReceptionistQueueState, // Receive state from ViewModel
+    state: ReceptionistQueueState,
     onEvent: (ReceptionistQueueEvent) -> Unit, // Receive event handler
     onNavigateToAddPatient: () -> Unit,
     authViewModel: AuthViewModel = hiltViewModel(), // Added for MedicalAppBar
-    // modifier: Modifier = Modifier // MedicalAppBar handles its own root modifier
 ) {
     MedicalAppBar(
         navController = navController,
