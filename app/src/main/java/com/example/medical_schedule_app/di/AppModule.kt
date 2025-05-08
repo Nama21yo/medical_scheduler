@@ -1,9 +1,11 @@
 package com.example.medical_schedule_app.di
 
 import android.content.Context
+import com.example.medical_schedule_app.data.api.AdminApiService
 import com.example.medical_schedule_app.data.api.ApiService
 import com.example.medical_schedule_app.data.api.DoctorApiService
 import com.example.medical_schedule_app.data.api.ReceptionistApiService
+import com.example.medical_schedule_app.data.repositories.AdminRepository
 import com.example.medical_schedule_app.data.repositories.DoctorRepository
 import com.example.medical_schedule_app.data.repositories.ReceptionistRepository
 import com.example.medical_schedule_app.data.repositories.UserRepository
@@ -42,4 +44,10 @@ object AppModule {
     fun provideReceptionistRepository(receptionistApiService: ReceptionistApiService): ReceptionistRepository {
         return ReceptionistRepository(receptionistApiService)
     }
+    @Provides
+    @Singleton
+    fun provideAdminRepository(api: AdminApiService): AdminRepository {
+        return AdminRepository(api)
+    }
+
 }

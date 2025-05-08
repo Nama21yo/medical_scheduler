@@ -1,5 +1,6 @@
 package com.example.medical_schedule_app.di
 
+import com.example.medical_schedule_app.data.api.AdminApiService
 import com.example.medical_schedule_app.data.api.ApiService
 import com.example.medical_schedule_app.data.api.DoctorApiService
 import com.example.medical_schedule_app.data.api.ReceptionistApiService
@@ -19,7 +20,7 @@ import javax.inject.Singleton
 object NetworkModule {
 
     // Base URL for the API
-    private const val BASE_URL = "http://10.6.205.241:4000/api/v1/"
+    private const val BASE_URL = "http://10.0.2.2:4000/api/v1/"
 
     @Provides
     @Singleton
@@ -67,4 +68,11 @@ object NetworkModule {
     fun provideReceptionistApiService(retrofit: Retrofit): ReceptionistApiService {
         return retrofit.create(ReceptionistApiService::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideAdminApiService(retrofit: Retrofit): AdminApiService {
+        return retrofit.create(AdminApiService::class.java)
+    }
+
 }
