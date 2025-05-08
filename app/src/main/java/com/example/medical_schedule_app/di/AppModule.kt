@@ -7,9 +7,10 @@ import com.example.medical_schedule_app.data.api.DoctorApiService
 import com.example.medical_schedule_app.data.api.ReceptionistApiService
 import com.example.medical_schedule_app.data.repositories.AdminRepository
 import com.example.medical_schedule_app.data.repositories.DoctorRepository
+import com.example.medical_schedule_app.data.repositories.ProfileRepository
 import com.example.medical_schedule_app.data.repositories.ReceptionistRepository
 import com.example.medical_schedule_app.data.repositories.UserRepository
-import com.example.medical_schedule_app.utils.SessionManager
+import com.example.medical_schedule_app.utils.ActualSessionManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,8 +24,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSessionManager(@ApplicationContext context: Context): SessionManager {
-        return SessionManager(context)
+    fun provideActualSessionManager(@ApplicationContext context: Context): ActualSessionManager {
+        return ActualSessionManager(context)
     }
 
     @Provides
@@ -48,6 +49,12 @@ object AppModule {
     @Singleton
     fun provideAdminRepository(api: AdminApiService): AdminRepository {
         return AdminRepository(api)
+    }
+
+    @Provides
+    @Singleton
+    fun provideProfileRepository(apiService: ApiService): ProfileRepository {
+        return ProfileRepository(apiService)
     }
 
 }
