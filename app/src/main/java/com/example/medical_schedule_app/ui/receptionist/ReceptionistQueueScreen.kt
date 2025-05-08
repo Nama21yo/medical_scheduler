@@ -371,39 +371,3 @@ fun RowScope.TableCell(
         fontSize = if (isHeader) 15.sp else 14.sp
     )
 }
-
-// Dummy ReceptionistQueueState for preview if needed
-// @Preview(showBackground = true, device = "spec:width=411dp,height=891dp")
-// @Composable
-// fun ReceptionistQueueScreenPhonePreview() {
-//     val dummyNavController = rememberNavController()
-//     val dummyState = ReceptionistQueueState() // Assuming a default constructor or create a sample state
-//     ReceptionistQueueScreenPhone(
-//         navController = dummyNavController,
-//         state = dummyState,
-//         onEvent = {},
-//         onNavigateToAddPatient = {}
-//         // authViewModel will be provided by Hilt in actual use,
-//         // or you can provide a dummy AuthViewModel for preview
-//     )
-// }
-// data class ReceptionistQueueState( // Simplified for preview
-//     val activeEntries: Int = 5,
-//     val pendingEntries: Int = 3,
-//     val searchQueue: String = "",
-//     val searchDataBaseSearch: String = "",
-//     val displayedQueues: List<QueueResponse> = emptyList(), // You'd need a dummy QueueResponse
-//     val patients: List<PatientResponse> = emptyList(),
-//     val isDatabaseSearchLoading: Boolean = false,
-//     val databaseSearchError: String? = null
-// )
-// // Dummy QueueResponse for preview
-// data class QueueResponse(
-//    val queue_id: Int,
-//    val patient: Patient, // You'd need a dummy Patient
-//    val status: Int
-// )
-// data class Patient(
-//    val first_name: String,
-//    val last_name: String
-// )
