@@ -1,14 +1,14 @@
 package com.example.medical_schedule_app.data.api
 
+import com.example.medical_schedule_app.data.models.User
 import com.example.medical_schedule_app.data.models.requests.LoginRequest
+import com.example.medical_schedule_app.data.models.requests.UserUpdateRequest
 import com.example.medical_schedule_app.data.models.responses.LoginResponse
 import com.example.medical_schedule_app.data.models.responses.RolesResponse
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Path
+import retrofit2.http.*
 
 interface ApiService {
+
     @GET("roles")
     suspend fun getRoles(): RolesResponse
 
@@ -23,4 +23,14 @@ interface ApiService {
 
     @POST("users/receptionists/signup/{email}")
     suspend fun signupReceptionist(@Path("email") email: String): LoginResponse
+
+    @GET("users/user")
+    suspend fun getUserProfile(@Header("Authorization") token: String): User
+
+    @PUT("users/{userId}")
+    suspend fun updateUserProfile(
+        @Header("Authorization") token: String,
+        @Path("userId") userId: Int,
+        @Body userUpdateRequest: UserUpdateRequest
+    ): User
 }
