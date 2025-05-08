@@ -3,6 +3,7 @@ package com.example.medical_schedule_app.ui.components
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ExperimentalMaterial3Api // Required for OutlinedTextField
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -18,12 +19,15 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalMaterial3Api::class) // Add OptIn for Experimental APIs
 @Composable
 fun PasswordField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    imeAction: ImeAction = ImeAction.Done
+    modifier: Modifier = Modifier, // <<--- ADDED MODIFIER PARAMETER
+    imeAction: ImeAction = ImeAction.Done,
+    isError: Boolean = false // Optional error state
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -31,21 +35,22 @@ fun PasswordField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
+        isError = isError,
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password,
             imeAction = imeAction
         ),
         trailingIcon = {
+            val image = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
+            val description = if (passwordVisible) "Hide password" else "Show password"
             IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                Icon(
-                    imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                    contentDescription = if (passwordVisible) "Hide password" else "Show password"
-                )
+                Icon(imageVector = image, contentDescription = description)
             }
         },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
+        modifier = modifier // Apply the passed-in modifier here
+        // .fillMaxWidth() // Remove: Let the caller decide
+        // .padding(vertical = 8.dp) // Remove: Let the caller decide
+        // Optional: Add colors to match your theme from OutlinedTextFieldDefaults
     )
 }
