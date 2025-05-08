@@ -1,6 +1,5 @@
 package com.example.medical_schedule_app.ui.admin
 
-import AddEmployeeEvent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medical_schedule_app.data.models.requests.DoctorRequest
@@ -36,20 +35,18 @@ class AddEmployeeViewModel @Inject constructor(
             is AddEmployeeEvent.OnRoleSelected -> {
                 _state.update { it.copy(selectedRole = event.role, showRoleDropdown = false, error = null) }
             }
-            AddEmployeeEvent.OnAddEmployeeClicked -> {
+            is AddEmployeeEvent.OnAddEmployeeClicked -> {
                 addEmployee()
             }
-            AddEmployeeEvent.ToggleRoleDropdown -> {
+            is AddEmployeeEvent.ToggleRoleDropdown -> {
                 _state.update { it.copy(showRoleDropdown = !it.showRoleDropdown) }
             }
-            AddEmployeeEvent.DismissRoleDropdown -> {
+            is AddEmployeeEvent.DismissRoleDropdown -> {
                 _state.update { it.copy(showRoleDropdown = false) }
             }
-            AddEmployeeEvent.ResetSuccessState -> {
+            is AddEmployeeEvent.ResetSuccessState -> {
                 _state.update { it.copy(addEmployeeSuccess = false) }
             }
-
-            else -> {}
         }
     }
 
