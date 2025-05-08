@@ -97,12 +97,13 @@ class AddPatientFormViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             val patientRequest = AddPatientRequest(
-                firstName = current.firstName,
-                lastName = current.lastName,
+                first_name = current.firstName,
+                last_name = current.lastName,
                 address = current.address,
                 email = current.email,
-                dob = current.dob,
-                phone = current.phoneNumber
+                date_of_birth = current.dob,
+                phone = current.phoneNumber,
+                gender = "Male"
             )
             receptionistRepository.addPatient(patientRequest).collect { result ->
                 when (result) {
