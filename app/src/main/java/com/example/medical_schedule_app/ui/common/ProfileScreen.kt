@@ -247,7 +247,7 @@ fun UserProfileView(user: User) {
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Dr ${user.username}",
+            text = user.username,
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = MediumBlue // Username text color
