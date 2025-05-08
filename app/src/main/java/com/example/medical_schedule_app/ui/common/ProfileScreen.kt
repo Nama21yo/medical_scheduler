@@ -24,10 +24,7 @@ import com.example.medical_schedule_app.ui.common.ProfileEvent
 import com.example.medical_schedule_app.ui.common.ProfileState
 import com.example.medical_schedule_app.ui.common.ProfileViewModel
 
-// MediumBlue is already defined and used (Color(0xFF3D6FB4))
-// val MediumBlue = Color(0xFF3D6FB4) // This line is not needed if already defined elsewhere and imported
 
-// Define the background color from DoctorQueueScreen
 val ScreenBackgroundColor = Color(0xFFF0F7FC) // As used in DoctorQueueScreen
 val CardBackgroundColor = Color.White // For cards on the ScreenBackgroundColor
 val MediumBlue = Color(0xFF3D6FB4)
@@ -112,7 +109,7 @@ fun ProfileScreen(
                 }
                 uiState.user != null -> {
                     if (uiState.isEditing) {
-                        // EditProfileView will be a card-like structure on ScreenBackgroundColor
+                        
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
@@ -205,7 +202,7 @@ fun TabButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val background = if (selected) MediumBlue else Color.Transparent // Keep transparent for unselected on white bg
+    val background = if (selected) MediumBlue else Color.Transparent 
     val textColor = if (selected) Color.White else MediumBlue
 
     Button(
@@ -227,7 +224,6 @@ fun UserProfileView(user: User) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            // .background(CardBackgroundColor, RoundedCornerShape(16.dp)) // Background is handled by Surface
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -252,15 +248,6 @@ fun UserProfileView(user: User) {
             fontWeight = FontWeight.Bold,
             color = MediumBlue // Username text color
         )
-        // Optional: Display email if available
-        // if (user.email.isNotBlank()) {
-        //     Spacer(modifier = Modifier.height(8.dp))
-        //     Text(
-        //         text = user.email,
-        //         fontSize = 16.sp,
-        //         color = Color.Gray // Or MediumBlue.copy(alpha = 0.7f)
-        //     )
-        // }
     }
 }
 
@@ -269,7 +256,7 @@ fun EditProfileView(uiState: ProfileState, onEvent: (ProfileEvent) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            // .background(CardBackgroundColor) // Background is handled by Surface
+            
             .padding(horizontal = 16.dp, vertical = 24.dp), // Added more vertical padding
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -278,7 +265,7 @@ fun EditProfileView(uiState: ProfileState, onEvent: (ProfileEvent) -> Unit) {
             unfocusedBorderColor = MediumBlue.copy(alpha = 0.7f),
             focusedLabelColor = MediumBlue,
             cursorColor = MediumBlue,
-            // Ensure text color inside field is appropriate for CardBackgroundColor (White)
+            
             focusedTextColor = MaterialTheme.colorScheme.onSurface, // Default text color
             unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
             // Add other color customizations if needed
