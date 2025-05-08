@@ -21,8 +21,11 @@ class AddPatientFormViewModel @Inject constructor(
 
     fun onEvent(event: AddPatientFormEvent) {
         when (event) {
-            is AddPatientFormEvent.OnFullNameChanged -> {
-                _state.update { it.copy(fullName = event.fullName, fullNameError = null) }
+            is AddPatientFormEvent.OnFirstNameChange -> {
+                _state.update { it.copy(firstName = event.firstName, fullNameError = null) }
+            }
+            is AddPatientFormEvent.OnLastNameChange -> {
+                _state.update { it.copy(lastName = event.lastName, fullNameError = null) }
             }
             is AddPatientFormEvent.OnAddressChange -> {
                 _state.update { it.copy(address = event.address, addressError = null) }
@@ -52,7 +55,7 @@ class AddPatientFormViewModel @Inject constructor(
         val phoneRegex = "^\\+?\\d{10,15}$".toRegex() // Allows + and 10-15 digits
 
         // Validate Full Name
-        if (current.fullName.isBlank() || current.fullName.length < 2) {
+        if (current.firstName.isBlank() || current.lastName.isBlank()) {
             _state.update { it.copy(fullNameError = "Full name must be at least 2 characters") }
             isValid = false
         }
@@ -94,7 +97,8 @@ class AddPatientFormViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             val patientRequest = AddPatientRequest(
-                fullName = current.fullName,
+                firstName = current.firstName,
+                lastName = current.lastName,
                 address = current.address,
                 email = current.email,
                 dob = current.dob,
@@ -108,7 +112,8 @@ class AddPatientFormViewModel @Inject constructor(
                                 isLoading = false,
                                 error = null,
                                 isSuccess = true,
-                                fullName = "",
+                                firstName = "",
+                                lastName = "",
                                 address = "",
                                 dob = "",
                                 email = "",

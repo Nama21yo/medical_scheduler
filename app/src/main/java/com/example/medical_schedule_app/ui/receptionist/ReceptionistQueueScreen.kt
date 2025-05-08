@@ -185,7 +185,10 @@ fun ReceptionistQueueScreenPhone(
                                 .background(Color.White)
                         ) {
                             items(state.patients, key = { patient -> patient.patient_id }) { patient ->
-                                DatabasePatientResultItem(patient = patient)
+                                DatabasePatientResultItem(
+                                    patient = patient,
+                                    onAddToQueueClick = { onEvent(ReceptionistQueueEvent.AddToQueue(it)) }
+                                )
                                 Divider(color = BorderColor, thickness = 1.dp)
                             }
                         }
@@ -198,7 +201,7 @@ fun ReceptionistQueueScreenPhone(
 }
 
 @Composable
-fun DatabasePatientResultItem(patient: PatientResponse) {
+fun DatabasePatientResultItem(patient: PatientResponse, onAddToQueueClick:(Int) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -211,6 +214,13 @@ fun DatabasePatientResultItem(patient: PatientResponse) {
             Text(text = "ID: ${patient.patient_id}", color = TextColorDark)
             Text(text = "Phone: ${patient.phone_number}", color = TextColorDark)
             Text(text = "Email: ${patient.email}", color = TextColorDark)
+        }
+        Button(
+            onClick = { onAddToQueueClick(patient.patient_id) },
+            colors = ButtonDefaults.buttonColors(containerColor = MediumBlue),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Text("Add to Queue", color = TextColorLight)
         }
         // Add an action button if needed, e.g., "Add to Queue"
         // Button(onClick = { /* Add to queue logic */ }) { Text("Add to Queue") }

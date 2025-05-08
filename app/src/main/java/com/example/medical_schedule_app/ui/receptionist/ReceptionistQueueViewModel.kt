@@ -39,6 +39,7 @@ class ReceptionistQueueViewModel @Inject constructor(
                 _state.update { it.copy(searchDataBaseSearch = event.searchDataBaseSearch) }
                 searchDatabase() // Call the database search function
             }
+            is ReceptionistQueueEvent.AddToQueue -> addPatientToQueue(event.patient_id)
         }
 
     }
@@ -146,6 +147,24 @@ class ReceptionistQueueViewModel @Inject constructor(
                 isDatabaseSearchLoading = false,
                 databaseSearchError = null
             ) }
+        }
+    }
+    private fun addPatientToQueue(patient_id: Int) {
+        viewModelScope.launch {
+            receptionistRepository.addPatientToQueue(patient_id).collect { result ->
+                when (result) {
+                    is NetworkResult.Loading -> {
+                        _state.update { it.copy(isLoading = true) }
+                    }
+                    is NetworkResult.Success -> {
+                        fetchQueues() // Refetch queues after successfully adding to queue
+                        _state.update { it.copy(isLoading = false) }
+                    }
+                    is NetworkResult.Error -> {
+                        _state.update { it.copy(isLoading = false, error = result.message) }
+                    }
+                }
+            }
         }
     }
 }

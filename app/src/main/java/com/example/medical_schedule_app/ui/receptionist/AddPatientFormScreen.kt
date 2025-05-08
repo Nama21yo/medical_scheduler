@@ -193,9 +193,18 @@ fun AddPatientFormScreen(
             )
 
             InputField(
-                label = "Full Name",
-                value = state.fullName,
-                onValueChange = { viewModel.onEvent(AddPatientFormEvent.OnFullNameChanged(it)) },
+                label = "First Name",
+                value = state.firstName,
+                onValueChange = { viewModel.onEvent(AddPatientFormEvent.OnFirstNameChange(it)) },
+                isError = state.fullNameError != null,
+                errorMessage = state.fullNameError
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            InputField(
+                label = "Last Name",
+                value = state.lastName,
+                onValueChange = { viewModel.onEvent(AddPatientFormEvent.OnLastNameChange(it)) },
                 isError = state.fullNameError != null,
                 errorMessage = state.fullNameError
             )

@@ -22,4 +22,6 @@ sealed class  ReceptionistQueueEvent {
     data class UpdateQueueStatus(val queueId: Int, val status: Int) : ReceptionistQueueEvent()
     data class OnSearchQueueChange(val searchQueue: String) : ReceptionistQueueEvent()
     data class OnSearchDataBaseSearchChange(val searchDataBaseSearch: String) : ReceptionistQueueEvent()
+    data class AddToQueue(val patient_id: Int) : ReceptionistQueueEvent() // Event for adding a patient to the queue
+
 }
