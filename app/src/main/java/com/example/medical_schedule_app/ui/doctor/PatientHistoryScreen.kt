@@ -261,7 +261,7 @@ fun DiagnosisDetailsScreen(
                                             )
                                             Button(
                                                 onClick = {
-                                                    navController.navigate("diagnosis_summary/${diagnosisId}")
+                                                    navController.navigate("diagnosis_summary/${diagnosis.diagnosis_id}")
                                                 },
                                                 colors = ButtonDefaults.buttonColors(
                                                     containerColor = blueColor
