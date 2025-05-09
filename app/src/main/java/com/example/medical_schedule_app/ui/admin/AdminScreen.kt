@@ -199,7 +199,7 @@ fun EmployeeTable(users: List<User>, onDeleteUser: (Int) -> Unit) {
             LazyColumn(modifier = Modifier.fillMaxHeight()) { // Allow table to take remaining height
                 items(users, key = { it.user_id }) { user ->
                     EmployeeRow(user, onDeleteUser)
-                    Divider(color = AdminContentBackgroundColor) // Divider color matching background
+                    HorizontalDivider(color = AdminContentBackgroundColor) // Divider color matching background
                 }
             }
         }
