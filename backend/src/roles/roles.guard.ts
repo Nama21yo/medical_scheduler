@@ -1,3 +1,4 @@
+// File: src/common/guards/roles.guard.ts
 import {
   CanActivate,
   ExecutionContext,
@@ -29,21 +30,16 @@ export class RolesGuard implements CanActivate {
       );
     }
 
-    console.log(authHeader);
-
     const jwt = authHeader.replace('Bearer ', '');
-    console.log('Decoded', jwt);
     const decoded = this.jwtService.decode(jwt);
-    console.log('Decoded', decoded);
 
     if (!decoded || !decoded.role || !decoded.role.name) {
       throw new UnauthorizedException('Invalid or malformed token');
     }
 
-    const userRole = decoded.role.name;
-    console.log('Decoded user role:', userRole);
-    console.log('Allowed roles:', roles);
+    const userRole = decoded.role.name.toLowerCase();
+    const allowedRoles = roles.map((role) => role.toLowerCase());
 
-    return roles.includes(userRole);
+    return allowedRoles.includes(userRole);
   }
 }
