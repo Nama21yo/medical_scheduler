@@ -27,7 +27,16 @@ import com.example.medical_schedule_app.ui.profile.ProfileScreen
 fun NavGraph(navController: NavHostController) {
     // Get ViewModel using hiltViewModel
     val authViewModel: AuthViewModel = hiltViewModel() // This authViewModel can be passed down
+    // Collect UI state from authViewModel
+    val authState = authViewModel.uiState.collectAsState().value
 
+    // Observe logout success and navigate to login screen if it's true
+    if (authState.logoutSuccess) {
+        navController.navigate(NavigationRoutes.AUTH) {
+            popUpTo(navController.graph.id) { inclusive = true }
+            launchSingleTop = true
+        }
+    }
     NavHost(
         navController = navController,
         startDestination = NavigationRoutes.AUTH
@@ -153,29 +162,22 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(NavigationRoutes.PROFILE) {
-            // ProfileScreen likely uses MedicalAppBar or needs its own auth logic,
-            // by default it will use hiltViewModel() if authViewModel is not passed
             ProfileScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateHome = {
-                    // Determine role and navigate accordingly, or have ProfileScreen handle it
-                    // For now, using existing logic. You might want to get role from authViewModel.
-                    // val userRole = authViewModel.currentUser.value?.role_id // Example
-                    // when (userRole) { ... }
-                    navController.navigate(NavigationRoutes.DOCTOR_QUEUE) { // Example, make this dynamic
+                    // Handle home navigation dynamically based on role
+                    navController.navigate(NavigationRoutes.DOCTOR_QUEUE) {
                         popUpTo(NavigationRoutes.PROFILE) { inclusive = true }
                     }
                 },
                 onNavigateToAuth = {
                     authViewModel.logout() // Perform logout action via ViewModel
+                    // Navigate to Auth screen after logout
                     navController.navigate(NavigationRoutes.AUTH) {
-                        popUpTo(navController.graph.id) {
-                            inclusive = true
-                        }
+                        popUpTo(navController.graph.id) { inclusive = true }
                         launchSingleTop = true
                     }
                 }
-                // authViewModel = authViewModel // Pass if ProfileScreen is designed to take it directly
             )
         }
     }
