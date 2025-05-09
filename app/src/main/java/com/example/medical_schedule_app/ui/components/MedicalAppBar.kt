@@ -16,15 +16,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel // For potentially injecting AuthViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-// import com.example.medical_schedule_app.R // Keep if you use drawable resources
 import com.example.medical_schedule_app.navigation.NavigationRoutes
-import com.example.medical_schedule_app.ui.auth.AuthViewModel // Import AuthViewModel
+import com.example.medical_schedule_app.ui.auth.AuthViewModel
 import kotlinx.coroutines.launch
 
-// ... (Color definitions remain the same) ...
+// Color definitions remain the same
 val MediumBlue = Color(0xFF3D6FB4)
 val ScreenBackgroundColor = Color(0xFFF0F7FC)
 val LightMediumBlueForSelection = Color(0xFF5C8DD0)
@@ -36,17 +35,17 @@ val LightMediumBlueForSelection = Color(0xFF5C8DD0)
 fun SideNavigationBar(
     navController: NavController,
     onMenuClick: () -> Unit,
-    onLogout: () -> Unit // Add onLogout lambda
+    authViewModel: AuthViewModel = hiltViewModel(), // Injects its own AuthViewModel
+    onNavigateToAuth: () -> Unit                   // Receives navigation lambda
 ) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
-            .width(60.dp)
+            .width(56.dp)
             .background(MediumBlue),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        // ... (Menu and Profile icons remain the same) ...
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(top = 16.dp)
@@ -56,10 +55,10 @@ fun SideNavigationBar(
                     imageVector = Icons.Default.GridView,
                     contentDescription = "Menu",
                     tint = Color.White,
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             IconButton(onClick = {
                 navController.navigate(NavigationRoutes.PROFILE) {
                     launchSingleTop = true
@@ -69,7 +68,7 @@ fun SideNavigationBar(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Profile",
                     tint = Color.White,
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }
@@ -81,14 +80,14 @@ fun SideNavigationBar(
             modifier = Modifier.padding(bottom = 16.dp)
         ) {
             IconButton(onClick = {
-                onLogout() // Call the logout logic
-                // Navigation happens after logout in the calling screen or NavGraph
+                authViewModel.logout()    // Call logout on its ViewModel instance
+                onNavigateToAuth()        // Call the navigation lambda
             }) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Logout, // Correct Logout Icon
+                    imageVector = Icons.AutoMirrored.Filled.Logout,
                     contentDescription = "Logout",
                     tint = Color.White,
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }
@@ -118,7 +117,7 @@ fun AppTopBar(
                 Icon(
                     imageVector = Icons.Filled.AccountCircle,
                     contentDescription = "Profile",
-                    modifier = Modifier.size(40.dp),
+                    modifier = Modifier.size(32.dp),
                     tint = Color.White
                 )
             }
@@ -134,16 +133,17 @@ fun AppTopBar(
 fun AppDrawerContent(
     navController: NavController,
     onCloseDrawer: () -> Unit,
-    onLogout: () -> Unit // Add onLogout lambda
+    authViewModel: AuthViewModel = hiltViewModel(), // Injects its own AuthViewModel
+    onNavigateToAuth: () -> Unit                   // Receives navigation lambda
 ) {
     ModalDrawerSheet(
-        modifier = Modifier.width(280.dp),
+        modifier = Modifier.width(260.dp),
         drawerContainerColor = MediumBlue,
         drawerContentColor = Color.White
     ) {
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(16.dp))
 
-        val itemPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
+        val itemPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 6.dp)
         val itemColors = NavigationDrawerItemDefaults.colors(
             unselectedContainerColor = Color.Transparent,
             selectedContainerColor = LightMediumBlueForSelection,
@@ -153,7 +153,6 @@ fun AppDrawerContent(
             selectedTextColor = Color.White
         )
 
-        // ... (Medicare and Profile NavigationDrawerItems remain the same) ...
         NavigationDrawerItem(
             icon = { Icon(Icons.Default.GridView, contentDescription = "Medicare", tint = Color.White) },
             label = { Text("Medicare", fontSize = 16.sp) },
@@ -187,8 +186,8 @@ fun AppDrawerContent(
             selected = false,
             onClick = {
                 onCloseDrawer()
-                onLogout() // Call the logout logic
-                // Navigation happens after logout in the calling screen or NavGraph
+                authViewModel.logout()    // Call logout on its ViewModel instance
+                onNavigateToAuth()        // Call the navigation lambda
             },
             modifier = Modifier.padding(itemPadding),
             colors = itemColors
@@ -205,17 +204,18 @@ fun MedicalAppBar(
     navController: NavController,
     screenTitle: String,
     showBackButton: Boolean = false,
-    authViewModel: AuthViewModel = hiltViewModel(), // Inject AuthViewModel here
+    // authViewModel is kept here as per your structure, though not directly used for logout by MedicalAppBar itself anymore.
+    // Hilt will manage its instance. If it's unused by MedicalAppBar directly, it could be removed.
+    authViewModel: AuthViewModel = hiltViewModel(),
     content: @Composable (PaddingValues) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // Define the onLogout action centrally
-    val performLogoutAndNavigate = {
-        authViewModel.logout()
+    // Define the navigation action for logout
+    val navigateToAuthScreenAction = {
         navController.navigate(NavigationRoutes.AUTH) {
-            popUpTo(navController.graph.id) { // Clear back stack up to the start of the graph
+            popUpTo(navController.graph.id) {
                 inclusive = true
             }
             launchSingleTop = true
@@ -228,7 +228,8 @@ fun MedicalAppBar(
             AppDrawerContent(
                 navController = navController,
                 onCloseDrawer = { scope.launch { drawerState.close() } },
-                onLogout = performLogoutAndNavigate // Pass the combined action
+                // authViewModel will be injected within AppDrawerContent
+                onNavigateToAuth = navigateToAuthScreenAction // Pass the navigation action
             )
         },
         gesturesEnabled = drawerState.isOpen
@@ -241,7 +242,8 @@ fun MedicalAppBar(
                         if (drawerState.isClosed) drawerState.open() else drawerState.close()
                     }
                 },
-                onLogout = performLogoutAndNavigate // Pass the combined action
+                // authViewModel will be injected within SideNavigationBar
+                onNavigateToAuth = navigateToAuthScreenAction // Pass the navigation action
             )
             Scaffold(
                 modifier = Modifier.weight(1f),
@@ -278,11 +280,18 @@ fun MedicalAppBar(
 
 
 // Previews
-@Preview(showBackground = true, widthDp = 60)
+@Preview(showBackground = true, widthDp = 56)
 @Composable
 fun SideNavigationBarPreviewThemed() {
-    // For preview, provide a dummy onLogout
-    SideNavigationBar(navController = rememberNavController(), onMenuClick = {}, onLogout = {})
+    // For preview, hiltViewModel() might require setup or a fake/stub.
+    // If it works in your preview environment, this is fine.
+    // Otherwise, you might need to provide a simple AuthViewModel stub for previews.
+    SideNavigationBar(
+        navController = rememberNavController(),
+        onMenuClick = {},
+        authViewModel = hiltViewModel(), // Or a preview-specific stub
+        onNavigateToAuth = {}
+    )
 }
 
 @Preview(showBackground = true)
@@ -291,11 +300,15 @@ fun AppTopBarPreviewThemed() {
     AppTopBar(title = "Screen Title", onProfileClick = {})
 }
 
-@Preview(showBackground = true, widthDp = 280)
+@Preview(showBackground = true, widthDp = 260)
 @Composable
 fun AppDrawerContentPreviewThemed() {
-    // For preview, provide a dummy onLogout
-    AppDrawerContent(navController = rememberNavController(), onCloseDrawer = {}, onLogout = {})
+    AppDrawerContent(
+        navController = rememberNavController(),
+        onCloseDrawer = {},
+        authViewModel = hiltViewModel(), // Or a preview-specific stub
+        onNavigateToAuth = {}
+    )
 }
 
 @Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,dpi=240")
@@ -304,7 +317,7 @@ fun MedicalAppBarPreviewThemed() {
     MedicalAppBar(
         navController = rememberNavController(),
         screenTitle = "Dashboard"
-        // authViewModel will be provided by Hilt in actual use
+        // authViewModel will be provided by Hilt in actual use or preview setup
     ) { paddingValues ->
         Box(
             modifier = Modifier

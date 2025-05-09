@@ -152,6 +152,8 @@ class ProfileViewModel @Inject constructor(
                             // Debug: Why this is Null when it is Printed?
                             println("The actual user data display: ${result.data}")
                             println("The formated user data display: $actualUpdatedUser")
+
+
                             if (actualUpdatedUser != null) {
                                 // Also update the user ID in session manager if it could change (unlikely for update)
                                 // sessionManager.saveUserId(actualUpdatedUser.user_id)
