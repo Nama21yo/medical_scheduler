@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.medical_schedule_app.utils.NetworkResult
 
 @HiltViewModel
 class AddEmployeeViewModel @Inject constructor(
@@ -35,9 +36,6 @@ class AddEmployeeViewModel @Inject constructor(
             is AddEmployeeEvent.OnRoleSelected -> {
                 _state.update { it.copy(selectedRole = event.role, showRoleDropdown = false, error = null) }
             }
-            is AddEmployeeEvent.OnAddEmployeeClicked -> {
-                addEmployee()
-            }
             is AddEmployeeEvent.ToggleRoleDropdown -> {
                 _state.update { it.copy(showRoleDropdown = !it.showRoleDropdown) }
             }
@@ -47,10 +45,14 @@ class AddEmployeeViewModel @Inject constructor(
             is AddEmployeeEvent.ResetSuccessState -> {
                 _state.update { it.copy(addEmployeeSuccess = false) }
             }
+            is AddEmployeeEvent.OnAddEmployeeClicked -> {
+                addEmployee()
+            }
         }
     }
 
 
+    // Kotlin
     private fun addEmployee() {
         val currentState = _state.value
         if (currentState.email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(currentState.email).matches()) {
@@ -63,8 +65,7 @@ class AddEmployeeViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
-            val result = if (currentState.selectedRole.equals("Doctor", ignoreCase = true)) {
+            val resultFlow = if (currentState.selectedRole.equals("Doctor", ignoreCase = true)) {
                 adminRepository.addDoctor(
                     DoctorRequest(
                         name = currentState.name,
@@ -81,27 +82,30 @@ class AddEmployeeViewModel @Inject constructor(
                 )
             }
 
-
-            result.fold(
-                onSuccess = {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            addEmployeeSuccess = true,
-                            email = "", // Clear form on success
-                            // selectedRole remains for convenience if adding multiple of same type
-                        )
+            resultFlow.collect { result ->
+                when (result) {
+                    is NetworkResult.Loading -> {
+                        _state.update { it.copy(isLoading = true, error = null) }
                     }
-                },
-                onFailure = { exception ->
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = exception.message ?: "Failed to add employee. Please try again."
-                        )
+                    is NetworkResult.Success -> {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                addEmployeeSuccess = true,
+                                email = "" // Clear form on success
+                            )
+                        }
+                    }
+                    is NetworkResult.Error -> {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                error = result.message ?: "Failed to add employee. Please try again."
+                            )
+                        }
                     }
                 }
-            )
+            }
         }
     }
 }

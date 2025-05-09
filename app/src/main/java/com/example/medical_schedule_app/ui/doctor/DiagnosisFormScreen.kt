@@ -37,36 +37,20 @@ fun DiagnosisFormScreen(
     // Navigate back after successful submission
     LaunchedEffect(state.isSuccess) {
         if (state.isSuccess) {
-            // Use navigateUp to go back to the previous screen (patient details)
             navController.navigateUp()
-            // Consider adding viewModel.onEvent(DiagnosisFormEvent.ResetSuccessState) here
-            // if you want to prevent re-navigation on configuration change or re-composition.
         }
     }
 
-    // MedicalAppBar as defined in your components file does not have a 'navigationIcon' parameter.
-    // It uses a SideNavigationBar and an AppTopBar (which doesn't have a leading icon slot).
-    // If you need a back button in the AppBar, you would need to modify the MedicalAppBar
-    // component definition (specifically its internal AppTopBar) to include a leadingIcon slot.
-    // For now, removing the unsupported navigationIcon parameter to fix the compilation errors.
-    // Back navigation upon success is handled by the LaunchedEffect. System back button
-    // or an in-content back button would be other ways to navigate back before submission.
     MedicalAppBar(
         navController = navController,
         screenTitle = "Add Diagnosis"
-        // Removed: navigationIcon = { ... IconButton for back ... }
     ) { paddingValues -> // Content lambda providing PaddingValues
-        // Your original root Column for the screen content
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues) // Apply padding from MedicalAppBar
                 .background(Color(0xFFF0F8FF))
-            // If this Column's content can exceed screen height, you might want to add:
-            // .verticalScroll(rememberScrollState())
         ) {
-            // This Column was your original main content container.
-            // It already had its own padding, which is fine.
             Column(
                 modifier = Modifier
                     .fillMaxWidth()

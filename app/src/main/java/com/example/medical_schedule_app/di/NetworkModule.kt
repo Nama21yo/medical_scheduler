@@ -1,13 +1,16 @@
+// File: app/src/main/java/com/example/medical_schedule_app/di/NetworkModule.kt
 package com.example.medical_schedule_app.di
 
 import com.example.medical_schedule_app.data.api.AdminApiService
 import com.example.medical_schedule_app.data.api.ApiService
 import com.example.medical_schedule_app.data.api.DoctorApiService
 import com.example.medical_schedule_app.data.api.ReceptionistApiService
+import com.example.medical_schedule_app.utils.ActualSessionManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -19,60 +22,63 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    // Base URL for the API
-    private const val BASE_URL = "http://10.0.2.2:4000/api/v1/"
+    private const val BASE_URL = "http://10.6.205.241:4000/api/v1/"
 
     @Provides
     @Singleton
-    fun provideLoggingInterceptor(): HttpLoggingInterceptor {
-        return HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+    fun provideLoggingInterceptor(): HttpLoggingInterceptor =
+        HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
+
+    @Provides
+    @Singleton
+    fun provideAuthInterceptor(sessionManager: ActualSessionManager): Interceptor =
+        Interceptor { chain ->
+            val token = sessionManager.fetchAuthToken()
+            val requestBuilder = chain.request().newBuilder()
+            token?.let {
+                requestBuilder.addHeader("Authorization", "Bearer $it")
+            }
+            chain.proceed(requestBuilder.build())
         }
-    }
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .build()
-    }
+    fun provideOkHttpClient(
+        loggingInterceptor: HttpLoggingInterceptor,
+        authInterceptor: Interceptor
+    ): OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
+        .addInterceptor(authInterceptor)
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .build()
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
+    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .client(okHttpClient)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService {
-        return retrofit.create(ApiService::class.java)
-    }
+    fun provideApiService(retrofit: Retrofit): ApiService =
+        retrofit.create(ApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideDoctorApiService(retrofit: Retrofit): DoctorApiService {
-        return retrofit.create(DoctorApiService::class.java)
-    }
+    fun provideDoctorApiService(retrofit: Retrofit): DoctorApiService =
+        retrofit.create(DoctorApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideReceptionistApiService(retrofit: Retrofit): ReceptionistApiService {
-        return retrofit.create(ReceptionistApiService::class.java)
-    }
+    fun provideReceptionistApiService(retrofit: Retrofit): ReceptionistApiService =
+        retrofit.create(ReceptionistApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideAdminApiService(retrofit: Retrofit): AdminApiService {
-        return retrofit.create(AdminApiService::class.java)
-    }
-
+    fun provideAdminApiService(retrofit: Retrofit): AdminApiService =
+        retrofit.create(AdminApiService::class.java)
 }
