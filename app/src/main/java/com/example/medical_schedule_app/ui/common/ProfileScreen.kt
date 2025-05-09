@@ -44,7 +44,8 @@ fun ProfileScreen(
     LaunchedEffect(uiState.updateSuccess, uiState.updateError, uiState.fetchError) {
         if (uiState.updateSuccess) {
             Toast.makeText(context, "Profile updated successfully!", Toast.LENGTH_SHORT).show()
-            viewModel.onEvent(ProfileEvent.ClearMessages)
+            viewModel.onEvent(ProfileEvent.ClearMessages) // Clear the success flag
+            onNavigateBack() // Navigate to the previous screen
         }
         uiState.updateError?.let {
             Toast.makeText(context, "Update failed: $it", Toast.LENGTH_LONG).show()
@@ -61,7 +62,7 @@ fun ProfileScreen(
             TopAppBar(
                 title = { Text(if (uiState.isEditing) "Edit Profile" else "Profile") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(onClick = onNavigateBack) { // This already uses onNavigateBack
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
@@ -109,7 +110,7 @@ fun ProfileScreen(
                 }
                 uiState.user != null -> {
                     if (uiState.isEditing) {
-                        
+
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
@@ -202,7 +203,7 @@ fun TabButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val background = if (selected) MediumBlue else Color.Transparent 
+    val background = if (selected) MediumBlue else Color.Transparent
     val textColor = if (selected) Color.White else MediumBlue
 
     Button(
@@ -256,7 +257,7 @@ fun EditProfileView(uiState: ProfileState, onEvent: (ProfileEvent) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            
+
             .padding(horizontal = 16.dp, vertical = 24.dp), // Added more vertical padding
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -265,7 +266,7 @@ fun EditProfileView(uiState: ProfileState, onEvent: (ProfileEvent) -> Unit) {
             unfocusedBorderColor = MediumBlue.copy(alpha = 0.7f),
             focusedLabelColor = MediumBlue,
             cursorColor = MediumBlue,
-            
+
             focusedTextColor = MaterialTheme.colorScheme.onSurface, // Default text color
             unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
             // Add other color customizations if needed
