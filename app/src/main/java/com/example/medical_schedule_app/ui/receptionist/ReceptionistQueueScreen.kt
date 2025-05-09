@@ -45,7 +45,7 @@ fun ReceptionistQueueScreenPhone(
     state: ReceptionistQueueState,
     onEvent: (ReceptionistQueueEvent) -> Unit, // Receive event handler
     onNavigateToAddPatient: () -> Unit,
-    authViewModel: AuthViewModel = hiltViewModel(), // Added for MedicalAppBar
+    authViewModel: AuthViewModel, // Added for MedicalAppBar
 ) {
     MedicalAppBar(
         navController = navController,

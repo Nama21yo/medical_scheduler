@@ -17,13 +17,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.medical_schedule_app.ui.auth.AuthViewModel
 import com.example.medical_schedule_app.ui.components.MedicalAppBar // Ensure this import is correct
 
 @Composable
 fun DiagnosisFormScreen(
     navController: NavController,
     patientId: Int? = null,
-    viewModel: DiagnosisFormViewModel = hiltViewModel()
+    viewModel: DiagnosisFormViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -43,7 +45,8 @@ fun DiagnosisFormScreen(
 
     MedicalAppBar(
         navController = navController,
-        screenTitle = "Add Diagnosis"
+        screenTitle = "Add Diagnosis",
+        authViewModel = authViewModel
     ) { paddingValues -> // Content lambda providing PaddingValues
         Column(
             modifier = Modifier

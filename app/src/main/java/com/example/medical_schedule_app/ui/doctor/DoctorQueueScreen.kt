@@ -21,6 +21,7 @@
     import androidx.navigation.NavController
     import androidx.navigation.compose.rememberNavController
     import com.example.medical_schedule_app.navigation.NavigationRoutes
+    import com.example.medical_schedule_app.ui.auth.AuthViewModel
     import com.example.medical_schedule_app.ui.components.MedicalAppBar
     import kotlinx.coroutines.flow.MutableStateFlow
     import kotlinx.coroutines.flow.StateFlow
@@ -30,14 +31,16 @@
     @Composable
     fun DoctorQueueScreen(
         navController: NavController,
-        viewModel: DoctorQueueViewModel = hiltViewModel()
+        viewModel: DoctorQueueViewModel = hiltViewModel(),
+        authViewModel: AuthViewModel
     ) {
         val state by viewModel.state.collectAsState()
         val blueColor = Color(0xFF3D6FB4)
 
         MedicalAppBar(
             navController = navController,
-            screenTitle = "Doctor Queue"
+            screenTitle = "Doctor Queue",
+            authViewModel = authViewModel
         ) { paddingValues ->
             Column(
                 modifier = Modifier

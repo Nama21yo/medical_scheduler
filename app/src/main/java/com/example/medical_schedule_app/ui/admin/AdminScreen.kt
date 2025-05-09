@@ -36,7 +36,7 @@ val AdminButtonColor = Color(0xFF073B63)
 fun AdminScreen(
     navController: NavController,
     viewModel: AdminViewModel = hiltViewModel(),
-    authViewModel: AuthViewModel = hiltViewModel() // Added for MedicalAppBar
+    authViewModel: AuthViewModel // Added for MedicalAppBar
 ) {
     val state by viewModel.state.collectAsState()
 

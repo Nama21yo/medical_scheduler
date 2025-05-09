@@ -21,6 +21,7 @@
     import androidx.navigation.NavController
     import androidx.navigation.compose.rememberNavController
     import com.example.medical_schedule_app.navigation.NavigationRoutes
+    import com.example.medical_schedule_app.ui.auth.AuthViewModel
     import com.example.medical_schedule_app.ui.components.MedicalAppBar
     import kotlinx.coroutines.flow.MutableStateFlow
     import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +33,8 @@
     fun DiagnosisDetailsScreen(
         diagnosisId: String,
         navController: NavController,
-        viewModel: PatientHistoryViewModel = hiltViewModel()
+        viewModel: PatientHistoryViewModel = hiltViewModel(),
+        authViewModel: AuthViewModel
     ) {
         val patientId = diagnosisId.toIntOrNull() ?: 0
         val state by viewModel.state.collectAsState()
@@ -46,7 +48,8 @@
 
         MedicalAppBar(
             navController = navController,
-            screenTitle = "Patient History"
+            screenTitle = "Patient History",
+            authViewModel = authViewModel
         ) { paddingValues ->
             Column(
                 modifier = Modifier

@@ -33,7 +33,7 @@ val MediumBlue = Color(0xFF3D6FB4)
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
-    authViewModel: AuthViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel,
     onNavigateBack: () -> Unit,
     onNavigateHome: () -> Unit,
     onNavigateToAuth: () -> Unit
