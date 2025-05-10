@@ -5,16 +5,16 @@ import com.example.medical_schedule_app.data.models.responses.PatientResponse //
 
 data class ReceptionistQueueState(
     val isLoading: Boolean = false,
-    val queues: List<QueueResponse> = emptyList(), // Original list of queues
-    val displayedQueues: List<QueueResponse> = emptyList(), // <-- Add this line
-    val patients: List<PatientResponse> = emptyList(), // <-- Add this line if you are displaying search results
+    val queues: List<QueueResponse> = emptyList(),
+    val displayedQueues: List<QueueResponse> = emptyList(),
+    val patients: List<PatientResponse> = emptyList(),
     val error: String? = null,
     val activeEntries: Int = 0,
     val pendingEntries: Int = 0,
     val searchDataBaseSearch: String = "",
     val searchQueue: String = "",
-    val isDatabaseSearchLoading: Boolean = false, // <-- Add this line if you have a loading state for search
-    val databaseSearchError: String? = null, // <-- Add this line if you have an error state for search
+    val isDatabaseSearchLoading: Boolean = false,
+    val databaseSearchError: String? = null,
 )
 
 sealed class  ReceptionistQueueEvent {

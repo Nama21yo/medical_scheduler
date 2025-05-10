@@ -17,9 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel // Import Hilt ViewModel
+//import androidx.hilt.navigation.compose.hiltViewModel // Import Hilt ViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+//import androidx.navigation.compose.rememberNavController
 import com.example.medical_schedule_app.data.models.responses.PatientResponse
 import com.example.medical_schedule_app.ui.components.MedicalAppBar
 import com.example.medical_schedule_app.ui.auth.AuthViewModel // Required by MedicalAppBar
@@ -189,7 +189,7 @@ fun ReceptionistQueueScreenPhone(
                                     patient = patient,
                                     onAddToQueueClick = { onEvent(ReceptionistQueueEvent.AddToQueue(it)) }
                                 )
-                                Divider(color = BorderColor, thickness = 1.dp)
+                                HorizontalDivider(color = BorderColor, thickness = 1.dp)
                             }
                         }
                     }
@@ -311,7 +311,7 @@ fun QueueTable(
             Column(modifier = Modifier.background(Color.White)) {
                 queueItems.forEach { item ->
                     QueueTableRow(item = item, onResolveClick = onResolveClick)
-                    Divider(color = BorderColor, thickness = 1.dp)
+                    HorizontalDivider(color = BorderColor, thickness = 1.dp)
                 }
             }
         }
