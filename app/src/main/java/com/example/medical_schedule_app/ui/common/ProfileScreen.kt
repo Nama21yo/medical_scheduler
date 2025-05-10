@@ -1,4 +1,4 @@
-package com.example.medical_schedule_app.ui.profile
+package com.example.medical_schedule_app.ui.common
 
 import android.widget.Toast
 import androidx.compose.foundation.*
@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+//import androidx.compose.material.icons.filled.ArrowBack
+//import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -20,9 +22,6 @@ import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.medical_schedule_app.data.models.User
 import com.example.medical_schedule_app.ui.auth.AuthViewModel
-import com.example.medical_schedule_app.ui.common.ProfileEvent
-import com.example.medical_schedule_app.ui.common.ProfileState
-import com.example.medical_schedule_app.ui.common.ProfileViewModel
 
 
 val ScreenBackgroundColor = Color(0xFFF0F7FC) // As used in DoctorQueueScreen
@@ -63,7 +62,7 @@ fun ProfileScreen(
                 title = { Text(if (uiState.isEditing) "Edit Profile" else "Profile") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) { // This already uses onNavigateBack
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
                 actions = {
@@ -72,7 +71,7 @@ fun ProfileScreen(
                         onNavigateToAuth()
                     }) {
                         Icon(
-                            imageVector = Icons.Filled.ExitToApp,
+                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                             contentDescription = "Logout",
                             tint = Color.White
                         )

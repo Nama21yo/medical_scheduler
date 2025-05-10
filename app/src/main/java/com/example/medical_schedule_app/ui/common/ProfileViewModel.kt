@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 //import com.example.medical_schedule_app.data.models.User // Ensure this is the correct User model
 import com.example.medical_schedule_app.data.models.requests.UserUpdateRequest
-import com.example.medical_schedule_app.data.models.responses.UserUpdateApiResponse
+//import com.example.medical_schedule_app.data.models.responses.UserUpdateApiResponse
 // You might need to define this or ensure your repository returns the nested User object directly
 // import com.example.medical_schedule_app.data.models.responses.UserUpdateApiResponse
 import com.example.medical_schedule_app.data.repositories.ProfileRepository
@@ -147,7 +147,7 @@ class ProfileViewModel @Inject constructor(
                             // Assuming result.data is of type UserUpdateApiResponse
                             // or your repository already extracts the 'updatedUser' part.
                             // If result.data IS UserUpdateApiResponse:
-                            val actualUpdatedUser = (result.data as? UserUpdateApiResponse)?.updatedUser
+                            val actualUpdatedUser = result.data ?: null
 
                             // Debug: Why this is Null when it is Printed?
                             println("The actual user data display: ${result.data}")
