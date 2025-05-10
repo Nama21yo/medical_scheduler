@@ -255,7 +255,7 @@
                                         }
                                     }
                                 }
-                                Divider(thickness = 0.5.dp, color = Color(0xFFD3D3D3))
+                                HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFD3D3D3))
                             }
                         }
                     }
