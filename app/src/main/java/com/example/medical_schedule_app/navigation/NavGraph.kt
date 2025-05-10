@@ -20,7 +20,7 @@ import com.example.medical_schedule_app.ui.doctor.DiagnosisDetailsScreen
 import com.example.medical_schedule_app.ui.receptionist.ReceptionistQueueScreenPhone
 import com.example.medical_schedule_app.ui.admin.AdminScreen
 import com.example.medical_schedule_app.ui.admin.AddEmployeeScreen
-import com.example.medical_schedule_app.ui.profile.ProfileScreen
+import com.example.medical_schedule_app.ui.common.ProfileScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {
