@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medical_schedule_app.data.api.ApiService
-//import com.example.medical_schedule_app.data.models.Role
 import com.example.medical_schedule_app.data.models.requests.SignupRequest
 import com.example.medical_schedule_app.data.repositories.UserRepository
 import com.example.medical_schedule_app.utils.ActualSessionManager
