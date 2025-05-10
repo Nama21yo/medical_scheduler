@@ -6,6 +6,7 @@ import com.example.medical_schedule_app.data.models.requests.SignupBody
 import com.example.medical_schedule_app.data.models.requests.UserUpdateRequest
 import com.example.medical_schedule_app.data.models.responses.LoginResponse
 import com.example.medical_schedule_app.data.models.responses.RolesResponse
+import com.example.medical_schedule_app.data.models.responses.UserUpdateApiResponse
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -44,5 +45,5 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("userId") userId: Int,
         @Body userUpdateRequest: UserUpdateRequest
-    ): User
+    ): Response<UserUpdateApiResponse> // this was the main problem for Profile
 }
